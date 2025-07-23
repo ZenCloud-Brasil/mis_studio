@@ -127,6 +127,56 @@ if os.getenv("CYPRESS_CONFIG") == "true":
 # Optionally import superset_config_docker.py (which will have been included on
 # the PYTHONPATH) in order to allow for local settings to be overridden
 #
+APP_NAME = "MIS - Manhattan Intelligence Studio"
+LOGO_TOOLTIP = "MIS - Manhattan Intelligence Studio"
+LOGO_RIGHT_TEXT = "Manhattan Intelligence Studio"
+FAVICONS = [{"href": "/static/assets/mis_images/Logo_Manhattan_Icone.png"}]
+APP_ICON = "/static/assets/mis_images/Logo_Manhattan_Icone.png"
+
+SUPERSET_WEBSERVER_TIMEOUT = 3600
+ROW_LIMIT = 50000000
+VIZ_ROW_LIMIT = 50000000
+SAMPLES_ROW_LIMIT = 50000000
+FILTER_SELECT_ROW_LIMIT = 50000000
+QUERY_SEARCH_LIMIT = 50000000
+SQL_MAX_ROW = 500000000
+DISPLAY_MAX_ROW = 50000000
+DEFAULT_SQLLAB_LIMIT = 50000000
+
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+    "EMBEDDED_SUPERSET": True,
+    "EMBEDDABLE_CHARTS": True,
+    "DASHBOARD_FILTERS_EXPERIMENTAL": True,
+    "DASHBOARD_NATIVE_FILTERS_SET": True,
+    "DASHBOARD_NATIVE_FILTERS": True,
+    "DASHBOARD_CROSS_FILTERS": True,
+    "ENABLE_TEMPLATE_PROCESSING": True
+}
+
+ENABLE_CORS = True
+
+CORS_OPTIONS = {
+    "supports_credentials": True,
+    "allow_headers": "*",
+    "expose_headers": "*",
+    "resources": "*",
+    "origins": "*"
+}
+
+ENABLE_PROXY_FIX = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+WTF_CSRF_ENABLED = False  # To enable csrf token
+# PUBLIC_ROLE_LIKE_GAMMA = True
+# PUBLIC_ROLE_LIKE = "Gamma"
+TALISMAN_ENABLED = False
+
+GUEST_ROLE_NAME = 'Gamma'
+GUEST_TOKEN_JWT_SECRET = "test-guest-secret-change-me"
+GUEST_TOKEN_JWT_ALGO = "HS256"
+GUEST_TOKEN_HEADER_NAME = "X-GuestToken"
+GUEST_TOKEN_JWT_EXP_SECONDS = 300  # 5 minutes
+
 try:
     import superset_config_docker
     from superset_config_docker import *  # noqa
