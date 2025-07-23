@@ -1,4 +1,3 @@
-/* eslint-env node */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,31 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-module.exports = {
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended',
-    'plugin:prettier/recommended',
-  ],
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true,
-    },
-    ecmaVersion: 2020,
-    sourceType: 'module',
-  },
-  plugins: ['@typescript-eslint', 'react', 'prettier'],
-  rules: {
-    'react/react-in-jsx-scope': 'off',
-    'react/prop-types': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-  },
-  settings: {
-    react: {
-      version: 'detect',
-    },
-  },
-  ignorePatterns: ['build/**/*', '.docusaurus/**/*', 'node_modules/**/*'],
-};
+import { utils, writeFile } from 'xlsx';
+
+export default function exportPivotExcel(
+  tableSelector: string,
+  fileName: string,
+) {
+  const table = document.querySelector(tableSelector);
+  const workbook = utils.table_to_book(table);
+  writeFile(workbook, `${fileName}.xlsx`);
+}
