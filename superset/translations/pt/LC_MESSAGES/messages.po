@@ -8200,8 +8200,13 @@ msgstr ""
 msgid "Position of row level subtotal"
 msgstr ""
 
+<<<<<<< Updated upstream
 msgid "Powered by ZenCloud"
 msgstr ""
+=======
+msgid "Powered by Apache Superset"
+msgstr "Powered by ZenCloud"
+>>>>>>> Stashed changes
 
 #, fuzzy
 msgid "Pre-filter"

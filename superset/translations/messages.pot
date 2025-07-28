@@ -7547,8 +7547,8 @@ msgstr ""
 msgid "Position of row level subtotal"
 msgstr ""
 
-msgid "Powered by ZenCloud"
-msgstr ""
+msgid "Powered by Apache Superset"
+msgstr "Powered by ZenCloud"
 
 msgid "Pre-filter"
 msgstr ""
