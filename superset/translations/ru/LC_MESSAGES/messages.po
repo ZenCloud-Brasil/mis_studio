@@ -8149,7 +8149,7 @@ msgstr "Расположение меток промежуточных верш�
 msgid "Position of row level subtotal"
 msgstr "Расположение подытога на уровне строки"
 
-msgid "Powered by Apache Superset"
+msgid "Powered by ZenCloud"
 msgstr "На базе Apache Superset"
 
 msgid "Pre-filter"

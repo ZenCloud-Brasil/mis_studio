@@ -8849,7 +8849,7 @@ msgstr "Position de l’étiquette de nœud intermédiaire sur l’arbre"
 msgid "Position of row level subtotal"
 msgstr "Position du sous-total au niveau de la rangée"
 
-msgid "Powered by Apache Superset"
+msgid "Powered by ZenCloud"
 msgstr "Propulsé par Apache Superset"
 
 msgid "Pre-filter"

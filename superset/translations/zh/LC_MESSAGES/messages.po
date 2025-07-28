@@ -8098,7 +8098,7 @@ msgstr "中间节点标签在树中的位置"
 msgid "Position of row level subtotal"
 msgstr "行级小计的位置"
 
-msgid "Powered by Apache Superset"
+msgid "Powered by ZenCloud"
 msgstr "由Apache Superset提供支持"
 
 msgid "Pre-filter"

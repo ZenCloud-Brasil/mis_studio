@@ -8353,7 +8353,7 @@ msgstr "Beschriftungs-Position der Zwischenknoten im Baum"
 msgid "Position of row level subtotal"
 msgstr "Position der Zwischensumme auf Zeilenebene"
 
-msgid "Powered by Apache Superset"
+msgid "Powered by ZenCloud"
 msgstr "Powered Apache Superset"
 
 msgid "Pre-filter"

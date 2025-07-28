@@ -405,3 +405,7 @@ zipp==3.19.0
     # via importlib-metadata
 zstandard==0.22.0
     # via flask-compress
+psycopg2-binary==2.9.6
+    # via apache-superset
+flask-cors==4.0.0
+    # via apache-superset

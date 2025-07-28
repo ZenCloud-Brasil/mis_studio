@@ -63,6 +63,10 @@ RUN rm /app/superset/translations/messages.pot
 FROM python:${PY_VER} AS lean
 
 WORKDIR /app
+
+COPY --chown=superset:superset mis_images /app/superset/static/assets
+COPY --chown=superset:superset mis_images /app/superset/static/assets/mis_images
+
 ENV LANG=C.UTF-8 \
   LC_ALL=C.UTF-8 \
   SUPERSET_ENV=production \
