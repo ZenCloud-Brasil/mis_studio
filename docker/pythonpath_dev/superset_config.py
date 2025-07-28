@@ -105,6 +105,64 @@ WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl
 WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 SQLLAB_CTAS_NO_LIMIT = True
 
+APP_NAME = "MIS - Manhattan Intelligence Studio"
+
+# Setting it to '/' would take the user to '/superset/welcome/'
+LOGO_TARGET_PATH = '/superset/welcome/'
+
+# Specify tooltip that should appear when hovering over the App Icon/Logo
+LOGO_TOOLTIP = "MIS - Manhattan Intelligence Studio"
+
+# Specify any text that should appear to the right of the logo
+LOGO_RIGHT_TEXT = "Manhattan Intelligence Studio"
+FAVICONS = [{"href": "/static/assets/mis_images/Logo_Manhattan_Icone.png"}]
+APP_ICON = "/static/assets/mis_images/Logo_Manhattan_Icone.png"
+
+ROW_LIMIT = 5000000
+VIZ_ROW_LIMIT = 50000000
+SAMPLES_ROW_LIMIT = 50000000
+FILTER_SELECT_ROW_LIMIT = 50000000
+QUERY_SEARCH_LIMIT = 50000000
+SQL_MAX_ROW = 500000000
+DISPLAY_MAX_ROW = 50000000
+DEFAULT_SQLLAB_LIMIT = 50000000
+
+FEATURE_FLAGS = {
+   "ALERT_REPORTS": True,
+   "EMBEDDED_SUPERSET": True,
+   "EMBEDDABLE_CHARTS": True,
+   "DASHBOARD_FILTERS_EXPERIMENTAL": True, 
+   "DASHBOARD_NATIVE_FILTERS_SET": True, 
+   "DASHBOARD_NATIVE_FILTERS": True, 
+   "DASHBOARD_CROSS_FILTERS": True, 
+   "ENABLE_TEMPLATE_PROCESSING": True
+}
+
+ENABLE_CORS = True
+
+CORS_OPTIONS = { 
+    "supports_credentials": True, 
+    "allow_headers": "*", 
+    "expose_headers": "*", 
+    "resources": "*", 
+    "origins": "*"
+}
+
+ENABLE_PROXY_FIX = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+WTF_CSRF_ENABLED=False #To enable csrf token
+# PUBLIC_ROLE_LIKE_GAMMA = True
+PUBLIC_ROLE_LIKE = "Gamma"
+TALISMAN_ENABLED = False
+
+
+GUEST_ROLE_NAME = "Gamma" 
+# GUEST_TOKEN_JWT_SECRET = "5iVDjfAQT-6e8P.fnP*%A2YC1s2+?Ha~" 
+GUEST_TOKEN_JWT_SECRET = "test-guest-secret-change-me" 
+GUEST_TOKEN_JWT_ALGO = "HS256" 
+GUEST_TOKEN_HEADER_NAME = "X-GuestToken" 
+GUEST_TOKEN_JWT_EXP_SECONDS = 300 # 5 minutes
+
 log_level_text = os.getenv("SUPERSET_LOG_LEVEL", "INFO")
 LOG_LEVEL = getattr(logging, log_level_text.upper(), logging.INFO)
 
