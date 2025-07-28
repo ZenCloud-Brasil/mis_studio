@@ -8122,7 +8122,7 @@ msgstr "Položaj vmesne oznake vozlišča na drevesu"
 msgid "Position of row level subtotal"
 msgstr "Položaj delnih vsot na nivoju vrstic"
 
-msgid "Powered by ZenCloud"
+msgid "Powered by Apache Superset"
 msgstr "Omogoča Apache Superset"
 
 msgid "Pre-filter"

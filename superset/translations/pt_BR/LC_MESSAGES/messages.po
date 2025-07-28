@@ -8295,8 +8295,8 @@ msgstr "Posição do rótulo do nó intermédio na árvore"
 msgid "Position of row level subtotal"
 msgstr "Posição do subtotal ao nível da linha"
 
-msgid "Powered by ZenCloud"
-msgstr "Feito por Apache Superset"
+msgid "Powered by Apache Superset"
+msgstr "Feito por ZenCloud"
 
 #, fuzzy
 msgid "Pre-filter"

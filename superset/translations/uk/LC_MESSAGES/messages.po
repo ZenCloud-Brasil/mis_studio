@@ -8201,7 +8201,7 @@ msgstr "Положення мітки проміжного вузла на де�
 msgid "Position of row level subtotal"
 msgstr "Положення субтотального рівня рядка"
 
-msgid "Powered by ZenCloud"
+msgid "Powered by Apache Superset"
 msgstr "Працює від Superset Apache"
 
 msgid "Pre-filter"

@@ -25,8 +25,9 @@ x-superset-user: &superset-user root
 x-superset-depends-on: &superset-depends-on
   - db
   - redis
-x-superset-volumes: &superset-volumes
+x-superset-volumes:
   # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+  &superset-volumes
   - ./docker:/app/docker
   - ./superset:/app/superset
   - ./superset-frontend:/app/superset-frontend
@@ -35,7 +36,7 @@ x-superset-volumes: &superset-volumes
 
 x-common-build: &common-build
   context: .
-  target: dev
+  target: lean
   cache_from:
     - apache/superset-cache:3.10-slim-bookworm
 
@@ -83,7 +84,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_app
-    command: ["/app/docker/docker-bootstrap.sh", "app"]
+    command: [ "/app/docker/docker-bootstrap.sh", "app" ]
     restart: unless-stopped
     ports:
       - 8088:8088
@@ -132,7 +133,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_init
-    command: ["/app/docker/docker-init.sh"]
+    command: [ "/app/docker/docker-init.sh" ]
     env_file:
       - path: docker/.env # default
         required: true
@@ -153,7 +154,7 @@ services:
       # if you do so, you have to run this manually on the host, which should perform better!
       SCARF_ANALYTICS: "${SCARF_ANALYTICS:-}"
     container_name: superset_node
-    command: ["/app/docker/docker-frontend.sh"]
+    command: [ "/app/docker/docker-frontend.sh" ]
     env_file:
       - path: docker/.env # default
         required: true
@@ -166,7 +167,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_worker
-    command: ["/app/docker/docker-bootstrap.sh", "worker"]
+    command: [ "/app/docker/docker-bootstrap.sh", "worker" ]
     env_file:
       - path: docker/.env # default
         required: true
@@ -181,7 +182,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD-SHELL", "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME"]
+      test: [ "CMD-SHELL", "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME" ]
     # Bump memory limit if processing selenium / thumbnails on superset-worker
     # mem_limit: 2038m
     # mem_reservation: 128M
@@ -190,7 +191,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_worker_beat
-    command: ["/app/docker/docker-bootstrap.sh", "beat"]
+    command: [ "/app/docker/docker-bootstrap.sh", "beat" ]
     env_file:
       - path: docker/.env # default
         required: true
@@ -207,7 +208,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_tests_worker
-    command: ["/app/docker/docker-bootstrap.sh", "worker"]
+    command: [ "/app/docker/docker-bootstrap.sh", "worker" ]
     env_file:
       - path: docker/.env # default
         required: true
@@ -227,7 +228,7 @@ services:
     user: *superset-user
     volumes: *superset-volumes
     healthcheck:
-      test: ["CMD-SHELL", "celery inspect ping -A superset.tasks.celery_app:app -d celery@$$HOSTNAME"]
+      test: [ "CMD-SHELL", "celery inspect ping -A superset.tasks.celery_app:app -d celery@$$HOSTNAME" ]
 
 volumes:
   superset_home:

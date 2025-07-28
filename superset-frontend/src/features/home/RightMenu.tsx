@@ -525,11 +525,11 @@ const RightMenu = ({
             <Menu.Divider key="version-info-divider" />,
             <Menu.ItemGroup key="about-section" title={t('About')}>
               <div className="about-section">
-                {navbarRight.show_watermark && (
+                {/* {navbarRight.show_watermark && (
                   <div css={versionInfoStyles}>
-                    {('Powered by ZenCloud')}
+                    {t('Powered by Apache Superset')}
                   </div>
-                )}
+                )} */}
                 {navbarRight.version_string && (
                   <div css={versionInfoStyles}>
                     {t('Version')}: {navbarRight.version_string}
