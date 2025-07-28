@@ -431,3 +431,5 @@ zipp==3.21.0
     # via importlib-metadata
 zstandard==0.23.0
     # via flask-compress
+flask-cors==4.0.0
+    # via apache-superset

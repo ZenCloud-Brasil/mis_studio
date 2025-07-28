@@ -199,6 +199,8 @@ RUN /app/docker/apt-install.sh \
 # Copy compiled things from previous stages
 COPY --from=superset-node /app/superset/static/assets superset/static/assets
 
+COPY --chown=superset:superset mis_images /app/superset/static/assets
+COPY --chown=superset:superset mis_images /app/superset/static/assets/mis_images
 # TODO, when the next version comes out, use --exclude superset/translations
 COPY superset superset
 # TODO in the meantime, remove the .po files

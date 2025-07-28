@@ -22,15 +22,16 @@
 # unique random secure passwords and SECRET_KEY.
 # -----------------------------------------------------------------------
 x-superset-volumes:
-  &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+  # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+  &superset-volumes
   - ./docker:/app/docker
   - superset_home:/app/superset_home
 
 x-common-build: &common-build
   context: .
-  target: dev
-  cache_from:
-    - apache/superset-cache:3.10-slim-bookworm
+  target: lean
+  # cache_from:
+  #   - apache/superset-cache:3.10-slim-bookworm
 
 services:
   redis:
@@ -62,7 +63,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_app
-    command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
+    command: [ "/app/docker/docker-bootstrap.sh", "app-gunicorn" ]
     user: "root"
     restart: unless-stopped
     ports:
@@ -78,7 +79,7 @@ services:
     container_name: superset_init
     build:
       <<: *common-build
-    command: ["/app/docker/docker-init.sh"]
+    command: [ "/app/docker/docker-init.sh" ]
     env_file:
       - path: docker/.env # default
         required: true
@@ -101,7 +102,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_worker
-    command: ["/app/docker/docker-bootstrap.sh", "worker"]
+    command: [ "/app/docker/docker-bootstrap.sh", "worker" ]
     env_file:
       - path: docker/.env # default
         required: true
@@ -114,11 +115,7 @@ services:
     user: "root"
     volumes: *superset-volumes
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME",
-        ]
+      test: [ "CMD-SHELL", "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME" ]
     environment:
       SUPERSET_LOG_LEVEL: "${SUPERSET_LOG_LEVEL:-info}"
 
@@ -126,7 +123,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_worker_beat
-    command: ["/app/docker/docker-bootstrap.sh", "beat"]
+    command: [ "/app/docker/docker-bootstrap.sh", "beat" ]
     env_file:
       - path: docker/.env # default
         required: true
