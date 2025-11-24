@@ -31,6 +31,9 @@ import { BitmapLayer, PathLayer } from '@deck.gl/layers';
 import { hexToRGB } from './utils/colors';
 import { ColorBreakpointType } from './types';
 
+export const TRANSPARENT_COLOR_ARRAY = [0, 0, 0, 0] as Color;
+export const HIGHLIGHT_COLOR_ARRAY = [255, 0, 0, 255] as Color;
+
 const DEFAULT_NUM_BUCKETS = 10;
 
 export const MAPBOX_LAYER_PREFIX = 'mapbox://';
@@ -72,19 +75,35 @@ export function getBreakPoints(
     if (minValue === undefined || maxValue === undefined) {
       return [];
     }
+    // Handle Infinity values
+    if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) {
+      return [];
+    }
     const delta = (maxValue - minValue) / numBuckets;
     const precision =
       delta === 0 ? 0 : Math.max(0, Math.ceil(Math.log10(1 / delta)));
-    const extraBucket =
-      maxValue > parseFloat(maxValue.toFixed(precision)) ? 1 : 0;
-    const startValue =
-      minValue < parseFloat(minValue.toFixed(precision))
-        ? minValue - 1
-        : minValue;
 
-    return new Array(numBuckets + 1 + extraBucket)
-      .fill(0)
-      .map((_, i) => (startValue + i * delta).toFixed(precision));
+    // Generate breakpoints
+    const breakPoints = new Array(numBuckets + 1).fill(0).map((_, i) => {
+      const value = minValue + i * delta;
+
+      // For the first breakpoint, floor to ensure minimum is included
+      if (i === 0) {
+        const scale = Math.pow(10, precision);
+        return (Math.floor(minValue * scale) / scale).toFixed(precision);
+      }
+
+      // For the last breakpoint, ceil to ensure maximum is included
+      if (i === numBuckets) {
+        const scale = Math.pow(10, precision);
+        return (Math.ceil(maxValue * scale) / scale).toFixed(precision);
+      }
+
+      // For middle breakpoints, use standard rounding
+      return value.toFixed(precision);
+    });
+
+    return breakPoints;
   }
 
   return formDataBreakPoints.sort(
@@ -121,7 +140,7 @@ export function getBreakPointColorScaler(
     : getSequentialSchemeRegistry().get(linearColorScheme);
 
   if (!colorScheme) {
-    return () => [0, 0, 0, 0];
+    return () => TRANSPARENT_COLOR_ARRAY;
   }
   let scaler: ScaleLinear<string, string> | ScaleThreshold<number, string>;
   let maskPoint: (v: number | undefined) => boolean;
@@ -143,7 +162,10 @@ export function getBreakPointColorScaler(
     scaler = scaleThreshold<number, string>()
       .domain(points)
       .range(bucketedColors);
-    maskPoint = value => !!value && (value > points[n] || value < points[0]);
+    // Only mask values that are strictly outside the min/max bounds
+    // Include values equal to the max breakpoint
+    maskPoint = value =>
+      !!value && (value > points[points.length - 1] || value < points[0]);
   } else {
     // interpolate colors linearly
     const linearScaleDomain = extent(features, accessor);
@@ -160,7 +182,7 @@ export function getBreakPointColorScaler(
   return (d: JsonObject): Color => {
     const v = accessor(d);
     if (!v) {
-      return [0, 0, 0, 0];
+      return TRANSPARENT_COLOR_ARRAY;
     }
     const c = hexToRGB(scaler(v));
     if (maskPoint(v)) {

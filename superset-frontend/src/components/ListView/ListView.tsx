@@ -19,7 +19,6 @@
 import { t, styled } from '@superset-ui/core';
 import { useCallback, useEffect, useRef, useState, ReactNode } from 'react';
 import cx from 'classnames';
-import Pagination from '@superset-ui/core/components/Pagination';
 import TableCollection from '@superset-ui/core/components/TableCollection';
 import BulkTagModal from 'src/features/tags/BulkTagModal';
 import {
@@ -46,6 +45,7 @@ const ListViewStyles = styled.div`
   ${({ theme }) => `
     text-align: center;
     background-color: ${theme.colorBgLayout};
+    padding-top: ${theme.paddingXS}px;
 
     .superset-list-view {
       text-align: left;
@@ -59,7 +59,7 @@ const ListViewStyles = styled.div`
         & .controls {
           display: flex;
           flex-wrap: wrap;
-          column-gap: ${theme.sizeUnit * 6}px;
+          column-gap: ${theme.sizeUnit * 7}px;
           row-gap: ${theme.sizeUnit * 4}px;
         }
       }
@@ -70,6 +70,7 @@ const ListViewStyles = styled.div`
 
       .body {
         overflow-x: auto;
+        overflow-y: hidden;
       }
 
       .ant-empty {
@@ -88,7 +89,7 @@ const ListViewStyles = styled.div`
 
     .row-count-container {
       margin-top: ${theme.sizeUnit * 2}px;
-      color: ${theme.colors.grayscale.base};
+      color: ${theme.colorText};
     }
   `}
 `;
@@ -160,7 +161,7 @@ const ViewModeContainer = styled.div`
     }
 
     .active {
-      background-color: ${theme.colors.grayscale.base};
+      background-color: ${theme.colorText};
 
       svg {
         color: ${theme.colorBgLayout};
@@ -465,6 +466,12 @@ export function ListView<T extends object = any>({
                 }
               }}
               toggleAllRowsSelected={toggleAllRowsSelected}
+              pageIndex={pageIndex}
+              pageSize={pageSize}
+              totalCount={count}
+              onPageChange={newPageIndex => {
+                gotoPage(newPageIndex);
+              }}
             />
           )}
           {!loading && rows.length === 0 && (
@@ -490,25 +497,6 @@ export function ListView<T extends object = any>({
           )}
         </div>
       </div>
-      {rows.length > 0 && (
-        <div className="pagination-container">
-          <Pagination
-            totalPages={pageCount || 0}
-            currentPage={pageCount && pageIndex < pageCount ? pageIndex + 1 : 0}
-            onChange={(p: number) => gotoPage(p - 1)}
-            hideFirstAndLastPageLinks
-          />
-          <div className="row-count-container">
-            {!loading &&
-              t(
-                '%s-%s of %s',
-                pageSize * pageIndex + (rows.length && 1),
-                pageSize * pageIndex + rows.length,
-                count,
-              )}
-          </div>
-        </div>
-      )}
     </ListViewStyles>
   );
 }

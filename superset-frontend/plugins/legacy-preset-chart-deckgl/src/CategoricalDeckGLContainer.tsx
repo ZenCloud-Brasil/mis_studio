@@ -89,6 +89,7 @@ export type CategoricalDeckGLContainerProps = {
   width: number;
   viewport: Viewport;
   getLayer: GetLayerType<unknown>;
+  getHighlightLayer?: GetLayerType<unknown>;
   payload: JsonObject;
   onAddFilter?: HandlerFunction;
   setControlValue: (control: string, value: JsonValue) => void;
@@ -155,25 +156,39 @@ const CategoricalDeckGLContainer = (props: CategoricalDeckGLContainerProps) => {
       switch (selectedColorScheme) {
         case COLOR_SCHEME_TYPES.fixed_color: {
           color = fd.color_picker || { r: 0, g: 0, b: 0, a: 100 };
+          const colorArray = [color.r, color.g, color.b, color.a * 255];
 
-          return data.map(d => ({
-            ...d,
-            color: [color.r, color.g, color.b, color.a * 255],
-          }));
+          return data.map(d => ({ ...d, color: colorArray }));
         }
         case COLOR_SCHEME_TYPES.categorical_palette: {
+          if (!fd.dimension) {
+            const fallbackColor = fd.color_picker || {
+              r: 0,
+              g: 0,
+              b: 0,
+              a: 100,
+            };
+            const colorArray = [
+              fallbackColor.r,
+              fallbackColor.g,
+              fallbackColor.b,
+              fallbackColor.a * 255,
+            ];
+            return data.map(d => ({ ...d, color: colorArray }));
+          }
+
           return data.map(d => ({
             ...d,
             color: hexToRGB(colorFn(d.cat_color, fd.slice_id)),
           }));
         }
         case COLOR_SCHEME_TYPES.color_breakpoints: {
-          const defaultBreakpointColor = fd.deafult_breakpoint_color
+          const defaultBreakpointColor = fd.default_breakpoint_color
             ? [
-                fd.deafult_breakpoint_color.r,
-                fd.deafult_breakpoint_color.g,
-                fd.deafult_breakpoint_color.b,
-                fd.deafult_breakpoint_color.a * 255,
+                fd.default_breakpoint_color.r,
+                fd.default_breakpoint_color.g,
+                fd.default_breakpoint_color.b,
+                fd.default_breakpoint_color.a * 255,
               ]
             : [
                 DEFAULT_DECKGL_COLOR.r,
@@ -189,17 +204,17 @@ const CategoricalDeckGLContainer = (props: CategoricalDeckGLContainerProps) => {
                   d.metric <= breakpoint.maxValue,
               );
 
-            return {
-              ...d,
-              color: breakpointForPoint
-                ? [
-                    breakpointForPoint?.color.r,
-                    breakpointForPoint?.color.g,
-                    breakpointForPoint?.color.b,
-                    breakpointForPoint?.color.a * 255,
-                  ]
-                : defaultBreakpointColor,
-            };
+            if (breakpointForPoint) {
+              const pointColor = [
+                breakpointForPoint.color.r,
+                breakpointForPoint.color.g,
+                breakpointForPoint.color.b,
+                breakpointForPoint.color.a * 255,
+              ];
+              return { ...d, color: pointColor };
+            }
+
+            return { ...d, color: defaultBreakpointColor };
           });
         }
         default: {
@@ -213,6 +228,7 @@ const CategoricalDeckGLContainer = (props: CategoricalDeckGLContainerProps) => {
   const getLayers = useCallback(() => {
     const {
       getLayer,
+      getHighlightLayer,
       payload,
       formData: fd,
       onAddFilter,
@@ -244,19 +260,27 @@ const CategoricalDeckGLContainer = (props: CategoricalDeckGLContainerProps) => {
       data: { ...payload.data, features },
     };
 
-    return [
-      getLayer({
-        formData: fd,
-        payload: filteredPayload,
-        onAddFilter,
-        setTooltip,
-        datasource: props.datasource,
-        onContextMenu,
-        filterState,
-        setDataMask,
-        emitCrossFilters,
-      }) as Layer,
-    ];
+    const layerProps = {
+      formData: fd,
+      payload: filteredPayload,
+      onAddFilter,
+      setTooltip,
+      datasource: props.datasource,
+      onContextMenu,
+      filterState,
+      setDataMask,
+      emitCrossFilters,
+    };
+
+    const layer = getLayer(layerProps) as Layer;
+
+    if (emitCrossFilters && filterState?.value && getHighlightLayer) {
+      const highlightLayer = getHighlightLayer(layerProps) as Layer;
+
+      return [layer, highlightLayer];
+    }
+
+    return [layer];
   }, [addColor, categories, props, setTooltip]);
 
   const toggleCategory = useCallback(

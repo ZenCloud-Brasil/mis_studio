@@ -28,6 +28,7 @@ from typing import Any, Callable, cast, Optional, Union
 
 import pandas as pd
 import sqlalchemy as sa
+from flask import current_app
 from flask_appbuilder import Model
 from flask_appbuilder.security.sqla.models import User
 from flask_babel import gettext as __, lazy_gettext as _
@@ -61,13 +62,13 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.schema import UniqueConstraint
-from sqlalchemy.sql import column, ColumnElement, literal_column, table
+from sqlalchemy.sql import column, ColumnElement, literal_column, quoted_name, table
 from sqlalchemy.sql.elements import ColumnClause, TextClause
 from sqlalchemy.sql.expression import Label
 from sqlalchemy.sql.selectable import Alias, TableClause
 from sqlalchemy.types import JSON
 
-from superset import app, db, is_feature_enabled, security_manager
+from superset import db, is_feature_enabled, security_manager
 from superset.commands.dataset.exceptions import DatasetNotFoundError
 from superset.common.db_query_status import QueryStatus
 from superset.connectors.sqla.utils import (
@@ -84,6 +85,7 @@ from superset.exceptions import (
     SupersetErrorsException,
     SupersetGenericDBErrorException,
     SupersetSecurityException,
+    SupersetSyntaxErrorException,
 )
 from superset.jinja_context import (
     BaseTemplateProcessor,
@@ -111,10 +113,9 @@ from superset.superset_typing import (
 from superset.utils import core as utils, json
 from superset.utils.backports import StrEnum
 
-config = app.config
+config = current_app.config  # Backward compatibility for tests
 metadata = Model.metadata  # pylint: disable=no-member
 logger = logging.getLogger(__name__)
-ADVANCED_DATA_TYPES = config["ADVANCED_DATA_TYPES"]
 VIRTUAL_TABLE_ALIAS = "virtual_table"
 
 # a non-exhaustive set of additive metrics
@@ -686,11 +687,12 @@ class BaseDatasource(AuditMixinNullable, ImportExportMixin):  # pylint: disable=
             grouped_filters = [or_(*clauses) for clauses in filter_groups.values()]
             all_filters.extend(grouped_filters)
             return all_filters
-        except TemplateError as ex:
+        except (TemplateError, SupersetSyntaxErrorException) as ex:
+            msg = getattr(ex, "message", str(ex))
             raise QueryObjectValidationError(
                 _(
                     "Error in jinja expression in RLS filters: %(msg)s",
-                    msg=ex.message,
+                    msg=msg,
                 )
             ) from ex
 
@@ -893,7 +895,16 @@ class TableColumn(AuditMixinNullable, ImportExportMixin, CertificationMixin, Mod
         type_ = column_spec.sqla_type if column_spec else None
         if expression := self.expression:
             if template_processor:
-                expression = template_processor.process_template(expression)
+                try:
+                    expression = template_processor.process_template(expression)
+                except SupersetSyntaxErrorException as ex:
+                    msg = str(ex)
+                    raise QueryObjectValidationError(
+                        _(
+                            "Error in jinja expression in column expression: %(msg)s",
+                            msg=msg,
+                        )
+                    ) from ex
             col = literal_column(expression, type_=type_)
         else:
             col = column(self.column_name, type_=type_)
@@ -931,7 +942,16 @@ class TableColumn(AuditMixinNullable, ImportExportMixin, CertificationMixin, Mod
             return self.database.make_sqla_column_compatible(sqla_col, label)
         if expression := self.expression:
             if template_processor:
-                expression = template_processor.process_template(expression)
+                try:
+                    expression = template_processor.process_template(expression)
+                except SupersetSyntaxErrorException as ex:
+                    msg = str(ex)
+                    raise QueryObjectValidationError(
+                        _(
+                            "Error in jinja expression in datetime column: %(msg)s",
+                            msg=msg,
+                        )
+                    ) from ex
             col = literal_column(expression, type_=type_)
         else:
             col = column(self.column_name, type_=type_)
@@ -1012,7 +1032,16 @@ class SqlMetric(AuditMixinNullable, ImportExportMixin, CertificationMixin, Model
         label = label or self.metric_name
         expression = self.expression
         if template_processor:
-            expression = template_processor.process_template(expression)
+            try:
+                expression = template_processor.process_template(expression)
+            except SupersetSyntaxErrorException as ex:
+                msg = str(ex)
+                raise QueryObjectValidationError(
+                    _(
+                        "Error in jinja expression in metric expression: %(msg)s",
+                        msg=msg,
+                    )
+                ) from ex
 
         sqla_col: ColumnClause = literal_column(expression)
         return self.table.database.make_sqla_column_compatible(sqla_col, label)
@@ -1310,7 +1339,7 @@ class SqlaTable(
 
     @property
     def health_check_message(self) -> str | None:
-        check = config["DATASET_HEALTH_CHECK"]
+        check = current_app.config["DATASET_HEALTH_CHECK"]
         return check(self) if check else None
 
     @property
@@ -1356,11 +1385,12 @@ class SqlaTable(
             )
         try:
             return self.text(fetch_values_predicate)
-        except TemplateError as ex:
+        except (TemplateError, SupersetSyntaxErrorException) as ex:
+            msg = getattr(ex, "message", str(ex))
             raise QueryObjectValidationError(
                 _(
                     "Error in jinja expression in fetch values predicate: %(msg)s",
-                    msg=ex.message,
+                    msg=msg,
                 )
             ) from ex
 
@@ -1368,10 +1398,29 @@ class SqlaTable(
         return get_template_processor(table=self, database=self.database, **kwargs)
 
     def get_sqla_table(self) -> TableClause:
-        tbl = table(self.table_name)
+        # For databases that support cross-catalog queries (like BigQuery),
+        # include the catalog in the table identifier to generate
+        # project.dataset.table format
+        if self.catalog and self.database.db_engine_spec.supports_cross_catalog_queries:
+            # SQLAlchemy doesn't have built-in catalog support for TableClause,
+            # so we need to construct the full identifier manually with proper quoting
+            catalog_quoted = self.quote_identifier(self.catalog)
+            table_quoted = self.quote_identifier(self.table_name)
+
+            if self.schema:
+                schema_quoted = self.quote_identifier(self.schema)
+                full_name = f"{catalog_quoted}.{schema_quoted}.{table_quoted}"
+            else:
+                full_name = f"{catalog_quoted}.{table_quoted}"
+
+            # Use quoted_name with quote=False to prevent SQLAlchemy from re-quoting
+            # the already-quoted identifier components
+            return table(quoted_name(full_name, quote=False))
+
         if self.schema:
-            tbl.schema = self.schema
-        return tbl
+            return table(self.table_name, schema=self.schema)
+
+        return table(self.table_name)
 
     def get_from_clause(
         self,
@@ -1387,6 +1436,7 @@ class SqlaTable(
         metric: AdhocMetric,
         columns_by_name: dict[str, TableColumn],
         template_processor: BaseTemplateProcessor | None = None,
+        processed: bool = False,
     ) -> ColumnElement:
         """
         Turn an adhoc metric into a sqlalchemy column.
@@ -1394,6 +1444,7 @@ class SqlaTable(
         :param dict metric: Adhoc metric definition
         :param dict columns_by_name: Columns for the current table
         :param template_processor: template_processor instance
+        :param bool processed: Whether the sqlExpression has already been processed
         :returns: The metric defined as a sqlalchemy column
         :rtype: sqlalchemy.sql.column
         """
@@ -1412,16 +1463,20 @@ class SqlaTable(
                 sqla_column = column(column_name)
             sqla_metric = self.sqla_aggregations[metric["aggregate"]](sqla_column)
         elif expression_type == utils.AdhocMetricExpressionType.SQL:
-            try:
-                expression = self._process_sql_expression(
-                    expression=metric["sqlExpression"],
-                    database_id=self.database_id,
-                    engine=self.database.backend,
-                    schema=self.schema,
-                    template_processor=template_processor,
-                )
-            except SupersetSecurityException as ex:
-                raise QueryObjectValidationError(ex.message) from ex
+            expression = metric.get("sqlExpression")
+
+            if not processed:
+                try:
+                    expression = self._process_select_expression(
+                        expression=expression,
+                        database_id=self.database_id,
+                        engine=self.database.backend,
+                        schema=self.schema,
+                        template_processor=template_processor,
+                    )
+                except SupersetSecurityException as ex:
+                    raise QueryObjectValidationError(ex.message) from ex
+
             sqla_metric = literal_column(expression)
         else:
             raise QueryObjectValidationError("Adhoc metric expressionType is invalid")
@@ -1447,8 +1502,14 @@ class SqlaTable(
         """
         label = utils.get_column_name(col)
         try:
-            expression = self._process_sql_expression(
-                expression=col["sqlExpression"],
+            sql_expression = col["sqlExpression"]
+
+            # For column references, conditionally quote identifiers that need it
+            if col.get("isColumnReference"):
+                sql_expression = self.database.quote_identifier(sql_expression)
+
+            expression = self._process_select_expression(
+                expression=sql_expression,
                 database_id=self.database_id,
                 engine=self.database.backend,
                 schema=self.schema,
@@ -1680,6 +1741,9 @@ class SqlaTable(
                     table=self,
                 )
                 new_column.is_dttm = new_column.is_temporal
+                # Set description from comment field if available
+                if col.get("comment"):
+                    new_column.description = col["comment"]
                 db_engine_spec.alter_new_orm_column(new_column)
             else:
                 new_column = old_column
@@ -1687,6 +1751,9 @@ class SqlaTable(
                     results.modified.append(col["column_name"])
                 new_column.type = col["type"]
                 new_column.expression = ""
+                # Set description from comment field if available
+                if col.get("comment"):
+                    new_column.description = col["comment"]
             new_column.groupby = True
             new_column.filterable = True
             columns.append(new_column)
@@ -1702,7 +1769,7 @@ class SqlaTable(
         self.add_missing_metrics(metrics)
 
         # Apply config supplied mutations.
-        config["SQLA_TABLE_MUTATOR"](self)
+        current_app.config["SQLA_TABLE_MUTATOR"](self)
 
         db.session.merge(self)
         return results
@@ -1833,13 +1900,31 @@ class SqlaTable(
         The cache key of a SqlaTable needs to consider any keys added by the parent
         class and any keys added via `ExtraCache`.
 
+        For virtual datasets, RLS predicates are included in the cache key to ensure
+        users with different RLS rules get different cached results.
+
         :param query_obj: query object to analyze
         :return: The extra cache keys
         """
+        from superset.utils.rls import collect_rls_predicates_for_sql
+
         extra_cache_keys = super().get_extra_cache_keys(query_obj)
         if self.has_extra_cache_key_calls(query_obj):
             sqla_query = self.get_sqla_query(**query_obj)
             extra_cache_keys += sqla_query.extra_cache_keys
+
+        # For virtual datasets, include RLS predicates in the cache key
+        if self.is_virtual and self.sql:
+            default_schema = self.database.get_default_schema(self.catalog)
+            rls_predicates = collect_rls_predicates_for_sql(
+                self.sql,
+                self.database,
+                self.catalog,
+                self.schema or default_schema or "",
+            )
+            # Add each predicate as a separate cache key component
+            extra_cache_keys.extend(rls_predicates)
+
         return list(set(extra_cache_keys))
 
     @property

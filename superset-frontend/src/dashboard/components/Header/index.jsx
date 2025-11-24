@@ -100,7 +100,7 @@ import { useHeaderActionsMenu } from './useHeaderActionsDropdownMenu';
 const extensionsRegistry = getExtensionsRegistry();
 
 const headerContainerStyle = theme => css`
-  border-bottom: 1px solid ${theme.colorSplit};
+  border-bottom: 1px solid ${theme.colorBorder};
 `;
 
 const editButtonStyle = theme => css`
@@ -130,18 +130,18 @@ const StyledUndoRedoButton = styled(Button)`
 `;
 
 const undoRedoStyle = theme => css`
-  color: ${theme.colors.grayscale.light1};
+  color: ${theme.colorIcon};
   &:hover {
-    color: ${theme.colors.grayscale.base};
+    color: ${theme.colorIconHover};
   }
 `;
 
 const undoRedoEmphasized = theme => css`
-  color: ${theme.colors.grayscale.base};
+  color: ${theme.colorIcon};
 `;
 
 const undoRedoDisabled = theme => css`
-  color: ${theme.colors.grayscale.light2};
+  color: ${theme.colorTextDisabled};
 `;
 
 const saveBtnStyle = theme => css`
@@ -218,6 +218,7 @@ const Header = () => {
   const refreshTimer = useRef(0);
   const ctrlYTimeout = useRef(0);
   const ctrlZTimeout = useRef(0);
+  const previousThemeRef = useRef(dashboardInfo.theme);
 
   const dashboardTitle = layout[DASHBOARD_HEADER_ID]?.meta?.text;
   const { slug } = dashboardInfo;
@@ -324,6 +325,14 @@ const Header = () => {
   useEffect(() => {
     startPeriodicRender(refreshFrequency * 1000);
   }, [refreshFrequency, startPeriodicRender]);
+
+  // Track theme changes as unsaved changes, and sync ref when navigating between dashboards
+  useEffect(() => {
+    if (editMode && dashboardInfo.theme !== previousThemeRef.current) {
+      boundActionCreators.setUnsavedChanges(true);
+    }
+    previousThemeRef.current = dashboardInfo.theme;
+  }, [dashboardInfo.theme, editMode, boundActionCreators]);
 
   useEffect(() => {
     if (UNDO_LIMIT - undoLength <= 0 && !didNotifyMaxUndoHistoryToast) {
@@ -533,10 +542,20 @@ const Header = () => {
         tags: updates.tags,
       });
       boundActionCreators.setUnsavedChanges(true);
-      boundActionCreators.dashboardTitleChanged(updates.title);
+
+      if (updates.title && dashboardTitle !== updates.title) {
+        boundActionCreators.updateDashboardTitle(updates.title);
+        boundActionCreators.onChange();
+      }
     },
-    [boundActionCreators],
+    [boundActionCreators, dashboardTitle],
   );
+
+  const handleEnterEditMode = useCallback(() => {
+    toggleEditMode();
+    boundActionCreators.clearDashboardHistory?.();
+    boundActionCreators.setUnsavedChanges(false);
+  }, [toggleEditMode, boundActionCreators]);
 
   const NavExtension = extensionsRegistry.get('dashboard.nav.right');
 
@@ -617,7 +636,9 @@ const Header = () => {
                     <StyledUndoRedoButton
                       buttonStyle="link"
                       disabled={undoLength < 1}
-                      onClick={undoLength && boundActionCreators.onUndo}
+                      onClick={
+                        undoLength > 0 ? boundActionCreators.onUndo : undefined
+                      }
                     >
                       <Icons.Undo
                         css={[
@@ -637,7 +658,9 @@ const Header = () => {
                     <StyledUndoRedoButton
                       buttonStyle="link"
                       disabled={redoLength < 1}
-                      onClick={redoLength && boundActionCreators.onRedo}
+                      onClick={
+                        redoLength > 0 ? boundActionCreators.onRedo : undefined
+                      }
                     >
                       <Icons.Redo
                         css={[
@@ -685,10 +708,7 @@ const Header = () => {
             {userCanEdit && (
               <Button
                 buttonStyle="secondary"
-                onClick={() => {
-                  toggleEditMode();
-                  boundActionCreators.clearDashboardHistory?.(); // Resets the `past` as an empty array
-                }}
+                onClick={handleEnterEditMode}
                 data-test="edit-dashboard-button"
                 className="action-button"
                 css={editButtonStyle}
@@ -711,6 +731,7 @@ const Header = () => {
       emphasizeUndo,
       handleCtrlY,
       handleCtrlZ,
+      handleEnterEditMode,
       hasUnsavedChanges,
       overwriteDashboard,
       redoLength,

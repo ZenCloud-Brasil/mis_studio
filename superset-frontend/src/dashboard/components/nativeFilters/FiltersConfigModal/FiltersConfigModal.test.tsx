@@ -58,6 +58,11 @@ class MainPreset extends Preset {
 const defaultState = () => ({
   datasources: { ...mockDatasource },
   charts: chartQueries,
+  dashboardLayout: {
+    present: {},
+    past: [],
+    future: [],
+  },
 });
 
 const noTemporalColumnsState = () => {
@@ -71,6 +76,29 @@ const noTemporalColumnsState = () => {
       [datasourceId]: {
         ...state.datasources[datasourceId],
         column_types: [0, 1],
+      },
+    },
+  };
+};
+
+const bigIntChartDataState = () => {
+  const state = defaultState();
+  return {
+    ...state,
+    charts: {
+      ...state.charts,
+      999: {
+        queriesResponse: [
+          {
+            status: 'success',
+            data: [
+              { name: 'Abigail', count: 228 },
+              { name: 'Aaron', count: 123012930123123n },
+              { name: 'Adam', count: 454 },
+            ],
+            applied_filters: [{ column: 'name' }],
+          },
+        ],
       },
     },
   };
@@ -279,7 +307,12 @@ test('render time filter types as disabled if there are no temporal columns in t
 test('validates the name', async () => {
   defaultRender();
   userEvent.click(screen.getByRole('button', { name: SAVE_REGEX }));
-  expect(await screen.findByText(NAME_REQUIRED_REGEX)).toBeInTheDocument();
+  await waitFor(
+    async () => {
+      expect(await screen.findByText(NAME_REQUIRED_REGEX)).toBeInTheDocument();
+    },
+    { timeout: 10000 },
+  );
 });
 
 test('validates the column', async () => {
@@ -306,18 +339,27 @@ test.skip('validates the default value', async () => {
 
 test('validates the pre-filter value', async () => {
   jest.useFakeTimers();
+  try {
+    defaultRender();
 
-  defaultRender();
+    await userEvent.click(screen.getByText(FILTER_SETTINGS_REGEX));
+    await userEvent.click(getCheckbox(PRE_FILTER_REGEX));
 
-  userEvent.click(screen.getByText(FILTER_SETTINGS_REGEX));
-  userEvent.click(getCheckbox(PRE_FILTER_REGEX));
+    jest.runAllTimers();
+  } finally {
+    jest.useRealTimers();
+  }
 
   jest.runOnlyPendingTimers();
   jest.useRealTimers();
 
-  await waitFor(() => {
-    expect(screen.getByText(PRE_FILTER_REQUIRED_REGEX)).toBeInTheDocument();
-  });
+  // Wait for validation to complete after timer switch
+  await waitFor(
+    () => {
+      expect(screen.getByText(PRE_FILTER_REQUIRED_REGEX)).toBeInTheDocument();
+    },
+    { timeout: 15000 },
+  );
 }, 50000); // Slow-running test, increase timeout to 50 seconds.
 
 // eslint-disable-next-line jest/no-disabled-tests
@@ -590,4 +632,25 @@ test('modifies the name of a filter', async () => {
       }),
     ),
   );
+});
+
+test('renders a filter with a chart containing BigInt values', async () => {
+  const nativeFilterState = [
+    buildNativeFilter('NATIVE_FILTER-1', 'state', ['NATIVE_FILTER-2']),
+    buildNativeFilter('NATIVE_FILTER-2', 'country', []),
+    buildNativeFilter('NATIVE_FILTER-3', 'product', []),
+  ];
+  const state = {
+    ...bigIntChartDataState(),
+    dashboardInfo: {
+      metadata: { native_filter_configuration: nativeFilterState },
+    },
+    dashboardLayout,
+  };
+  defaultRender(state, {
+    ...props,
+    createNewOnOpen: false,
+  });
+
+  expect(screen.getByText(FILTER_TYPE_REGEX)).toBeInTheDocument();
 });

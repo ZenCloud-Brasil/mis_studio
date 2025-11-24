@@ -759,10 +759,10 @@ msgstr "AQE"
 msgid "AUG"
 msgstr "Серпень"
 
-msgid "AXIS TITLE MARGIN"
+msgid "Axis title margin"
 msgstr "ЗАВДАННЯ ВІСІВ"
 
-msgid "AXIS TITLE POSITION"
+msgid "Axis title position"
 msgstr "Позиція заголовка вісь"
 
 msgid "About"
@@ -826,11 +826,11 @@ msgid "Add Dashboard"
 msgstr "Додайте Інформаційну панель"
 
 #, fuzzy
-msgid "Add Divider"
+msgid "Add divider"
 msgstr "Роздільник"
 
 #, fuzzy
-msgid "Add Filter"
+msgid "Add filter"
 msgstr "Додати фільтр"
 
 #, fuzzy
@@ -1834,7 +1834,7 @@ msgstr "Автоматичні фільтри"
 msgid "Autocomplete query predicate"
 msgstr "Auto -Complete Query Prediac"
 
-msgid "Automatic Color"
+msgid "Automatic color"
 msgstr "Автоматичний колір"
 
 #, fuzzy
@@ -3305,7 +3305,7 @@ msgstr "Карта країни"
 msgid "Create"
 msgstr "Створити"
 
-msgid "Create Chart"
+msgid "Create chart"
 msgstr "Створити діаграму"
 
 msgid "Create a dataset"
@@ -3436,7 +3436,7 @@ msgid "Custom"
 msgstr "Звичайний"
 
 #, fuzzy
-msgid "Custom Conditional Formatting"
+msgid "Custom conditional formatting"
 msgstr "Умовне форматування"
 
 msgid "Custom Plugin"
@@ -5963,7 +5963,7 @@ msgstr "Зображення (PNG), вбудоване в електронну �
 msgid "Image download failed, please refresh and try again."
 msgstr "Завантажити зображення не вдалося, оновити та повторіть спробу."
 
-msgid "Impersonate logged in user (Presto, Trino, Drill, Hive, and GSheets)"
+msgid "Impersonate logged in user (Presto, Trino, Drill, Hive, and Google Sheets)"
 msgstr "Видання себе в системі в системі (Presto, Trino, Drill, Hive та Gsheets)"
 
 msgid "Import"
@@ -8928,7 +8928,7 @@ msgstr "Ресурс вже має доданий звіт."
 msgid "Resource was not found."
 msgstr "Ресурс не був знайдений."
 
-msgid "Restore Filter"
+msgid "Restore filter"
 msgstr "Відновити фільтр"
 
 msgid "Results"
@@ -9531,7 +9531,7 @@ msgstr "Виберіть метод доставки"
 msgid "Select Tags"
 msgstr "Скасувати всі"
 
-msgid "Select Viz Type"
+msgid "Select chart type"
 msgstr "Виберіть тип ITE"
 
 msgid "Select a column"
@@ -9968,7 +9968,7 @@ msgid "Show CREATE VIEW statement"
 msgstr "Показати заяву про створення перегляду"
 
 #, fuzzy
-msgid "Show Cell bars"
+msgid "Show cell bars"
 msgstr "Показати стільникові смуги"
 
 msgid "Show Dashboard"
@@ -13662,7 +13662,7 @@ msgstr "Напишіть опис свого запиту"
 msgid "Write a handlebars template to render the data"
 msgstr "Напишіть шаблон ручки для надання даних"
 
-msgid "X AXIS TITLE MARGIN"
+msgid "X axis title margin"
 msgstr ""
 
 msgid "X Axis"
@@ -13703,7 +13703,7 @@ msgstr "X-осі сорт"
 msgid "X-axis"
 msgstr "X-вісь"
 
-msgid "XScale Interval"
+msgid "X-scale interval"
 msgstr "Xscale Interval"
 
 msgid "XYZ"
@@ -13712,7 +13712,7 @@ msgstr ""
 msgid "Y 2 bounds"
 msgstr "Y 2 межі"
 
-msgid "Y AXIS TITLE MARGIN"
+msgid "Y axis title margin"
 msgstr "Y Exis title Margin"
 
 msgid "Y Axis"
@@ -13762,7 +13762,7 @@ msgstr "Y-вісь"
 msgid "Y-axis bounds"
 msgstr "Y-осі межі"
 
-msgid "YScale Interval"
+msgid "Y-scale interval"
 msgstr "ІНСПАЛЬНИЙ ІНТЕРВАЛЬ"
 
 msgid "Year"
@@ -14148,7 +14148,7 @@ msgstr "`row_offset` повинен бути більшим або рівним 
 msgid "`width` must be greater or equal to 0"
 msgstr "`width` повинна бути більшою або рівною 0"
 
-msgid "add colors to cell bars for +/-"
+msgid "Add colors to cell bars for +/-"
 msgstr ""
 
 msgid "aggregate"
@@ -14195,7 +14195,7 @@ msgid "background"
 msgstr "фон"
 
 #, fuzzy
-msgid "basic conditional formatting"
+msgid "Basic conditional formatting"
 msgstr "Умовне форматування"
 
 msgid "basis"

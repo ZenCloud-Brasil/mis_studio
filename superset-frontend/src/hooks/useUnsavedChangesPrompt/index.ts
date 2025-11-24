@@ -41,6 +41,7 @@ export const useUnsavedChangesPrompt = ({
   const manualSaveRef = useRef(false); // Track if save was user-initiated (not via navigation)
 
   const handleConfirmNavigation = useCallback(() => {
+    setShowModal(false);
     confirmNavigationRef.current?.();
   }, []);
 
@@ -67,7 +68,7 @@ export const useUnsavedChangesPrompt = ({
   }, [onSave]);
 
   const blockCallback = useCallback(
-    ({ pathname }: { pathname: string }) => {
+    ({ pathname, state }: { pathname: string; state?: any }) => {
       if (manualSaveRef.current) {
         manualSaveRef.current = false;
         return undefined;
@@ -75,7 +76,7 @@ export const useUnsavedChangesPrompt = ({
 
       confirmNavigationRef.current = () => {
         unblockRef.current?.();
-        history.push(pathname);
+        history.push(pathname, state);
       };
 
       setShowModal(true);

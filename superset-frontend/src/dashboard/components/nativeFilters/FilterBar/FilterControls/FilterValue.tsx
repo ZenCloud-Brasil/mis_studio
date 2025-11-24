@@ -62,7 +62,15 @@ import { useFilterOutlined } from '../useFilterOutlined';
 const HEIGHT = 32;
 
 // Overrides superset-ui height with min-height
-const StyledDiv = styled.div`
+const StyledDiv = styled.div<{
+  orientation: FilterBarOrientation;
+  overflow: boolean;
+}>`
+  padding-bottom: ${({ theme, orientation, overflow }) =>
+    orientation === FilterBarOrientation.Horizontal && !overflow
+      ? 0
+      : (theme?.sizeUnit ?? 4)}px;
+
   & > div {
     height: auto !important;
     min-height: ${HEIGHT}px;
@@ -155,6 +163,34 @@ const FilterValue: FC<FilterControlProps> = ({
       dashboardId,
     });
     const filterOwnState = filter.dataMask?.ownState || {};
+    if (filter?.cascadeParentIds?.length) {
+      // Prevent unnecessary backend requests by validating parent filter selections first
+
+      let selectedParentFilterValueCounts = 0;
+
+      filter?.cascadeParentIds?.forEach(pId => {
+        const extraFormData = dataMaskSelected?.[pId]?.extraFormData;
+        if (extraFormData?.filters?.length) {
+          selectedParentFilterValueCounts += extraFormData.filters.length;
+        } else if (extraFormData?.time_range) {
+          selectedParentFilterValueCounts += 1;
+        }
+      });
+
+      // check if all parent filters with defaults have a value selected
+
+      let depsCount = dependencies.filters?.length ?? 0;
+
+      if (dependencies?.time_range) {
+        depsCount += 1;
+      }
+      if (selectedParentFilterValueCounts !== depsCount) {
+        // child filter should not request backend until it
+        // has all the required information from parent filters
+        return;
+      }
+    }
+
     // TODO: We should try to improve our useEffect hooks to depend more on
     // granular information instead of big objects that require deep comparison.
     const customizer = (
@@ -226,6 +262,7 @@ const FilterValue: FC<FilterControlProps> = ({
     hasDataSource,
     isRefreshing,
     shouldRefresh,
+    dataMaskSelected,
   ]);
 
   useEffect(() => {
@@ -324,7 +361,11 @@ const FilterValue: FC<FilterControlProps> = ({
   }
 
   return (
-    <StyledDiv data-test="form-item-value">
+    <StyledDiv
+      data-test="form-item-value"
+      orientation={orientation}
+      overflow={overflow}
+    >
       {isLoading ? (
         <Loading position="inline-centered" />
       ) : (

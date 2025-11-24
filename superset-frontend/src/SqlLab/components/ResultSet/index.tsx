@@ -25,6 +25,7 @@ import {
   MouseEvent,
 } from 'react';
 
+import AutoSizer from 'react-virtualized-auto-sizer';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { pick } from 'lodash';
@@ -86,6 +87,7 @@ import {
 } from 'src/logger/LogUtils';
 import { Icons } from '@superset-ui/core/components/Icons';
 import { findPermission } from 'src/utils/findPermission';
+import { ensureAppRoot } from 'src/utils/pathUtils';
 import ExploreCtasResultsButton from '../ExploreCtasResultsButton';
 import ExploreResultsButton from '../ExploreResultsButton';
 import HighlightedSql from '../HighlightedSql';
@@ -116,6 +118,7 @@ const ResultContainer = styled.div`
   display: flex;
   flex-direction: column;
   row-gap: ${({ theme }) => theme.sizeUnit * 2}px;
+  height: 100%;
 `;
 
 const ResultlessStyles = styled.div`
@@ -147,6 +150,7 @@ const ReturnedRows = styled.div`
 const ResultSetControls = styled.div`
   display: flex;
   justify-content: space-between;
+  padding-left: ${({ theme }) => theme.sizeUnit * 4}px;
 `;
 
 const ResultSetButtons = styled.div`
@@ -194,6 +198,7 @@ const ResultSet = ({
         'dbId',
         'tab',
         'sql',
+        'executedSql',
         'sqlEditorId',
         'templateParams',
         'schema',
@@ -221,7 +226,6 @@ const ResultSet = ({
   const [searchText, setSearchText] = useState('');
   const [cachedData, setCachedData] = useState<Record<string, unknown>[]>([]);
   const [showSaveDatasetModal, setShowSaveDatasetModal] = useState(false);
-  const [alertIsOpen, setAlertIsOpen] = useState(false);
 
   const history = useHistory();
   const dispatch = useDispatch();
@@ -255,14 +259,6 @@ const ResultSet = ({
       fetchResults(query);
     }
   }, [query, cache]);
-
-  const calculateAlertRefHeight = (alertElement: HTMLElement | null) => {
-    if (alertElement) {
-      setAlertIsOpen(true);
-    } else {
-      setAlertIsOpen(false);
-    }
-  };
 
   const popSelectStar = (tempSchema: string | null, tempTable: string) => {
     const qe = {
@@ -306,7 +302,7 @@ const ResultSet = ({
   };
 
   const getExportCsvUrl = (clientId: string) =>
-    `/api/v1/sqllab/export/${clientId}/`;
+    ensureAppRoot(`/api/v1/sqllab/export/${clientId}/`);
 
   const renderControls = () => {
     if (search || visualize || csv) {
@@ -471,10 +467,10 @@ const ResultSet = ({
       return (
         <>
           {!limitReached && shouldUseDefaultDropdownAlert && (
-            <div ref={calculateAlertRefHeight}>
+            <div>
               <Alert
+                closable
                 type="warning"
-                onClose={() => setAlertIsOpen(false)}
                 message={t(
                   'The number of rows displayed is limited to %(rows)d by the dropdown.',
                   { rows },
@@ -483,10 +479,10 @@ const ResultSet = ({
             </div>
           )}
           {limitReached && (
-            <div ref={calculateAlertRefHeight}>
+            <div>
               <Alert
+                closable
                 type="warning"
-                onClose={() => setAlertIsOpen(false)}
                 message={
                   isAdmin
                     ? displayMaxRowsReachedMessage.withAdmin
@@ -532,7 +528,6 @@ const ResultSet = ({
     );
   };
 
-  const limitReached = query?.results?.displayLimitReached;
   let sql;
   let exploreDBId = query.dbId;
   if (database?.explore_database_id) {
@@ -563,6 +558,7 @@ const ResultSet = ({
     sql = (
       <HighlightedSql
         sql={query.sql}
+        rawSql={query.executedSql}
         {...(showSqlInline && { maxLines: 1, maxWidth: 60 })}
       />
     );
@@ -646,17 +642,6 @@ const ResultSet = ({
 
   if (query.state === QueryState.Success && query.results) {
     const { results } = query;
-    // Accounts for offset needed for height of ResultSetRowsReturned component if !limitReached
-    const rowMessageHeight = !limitReached ? 32 : 0;
-    // Accounts for offset needed for height of Alert if this.state.alertIsOpen
-    const alertContainerHeight = 70;
-    // We need to calculate the height of this.renderRowsReturned()
-    // if we want results panel to be proper height because the
-    // FilterTable component needs an explicit height to render
-    // the Table component
-    const rowsHeight = alertIsOpen
-      ? height - alertContainerHeight
-      : height - rowMessageHeight;
     let data;
     if (cache && query.cached) {
       data = cachedData;
@@ -680,6 +665,7 @@ const ResultSet = ({
                 css={css`
                   display: flex;
                   justify-content: space-between;
+                  padding-left: ${theme.sizeUnit * 4}px;
                   align-items: center;
                   gap: ${GAP}px;
                 `}
@@ -712,15 +698,28 @@ const ResultSet = ({
               {sql}
             </>
           )}
-          <ResultTable
-            data={data}
-            queryId={query.id}
-            orderedColumnKeys={results.columns.map(col => col.column_name)}
-            height={rowsHeight}
-            filterText={searchText}
-            expandedColumns={expandedColumns}
-            allowHTML={allowHTML}
-          />
+          <div
+            css={css`
+              flex: 1 1 auto;
+              padding-left: ${theme.sizeUnit * 4}px;
+            `}
+          >
+            <AutoSizer disableWidth>
+              {({ height }) => (
+                <ResultTable
+                  data={data}
+                  queryId={query.id}
+                  orderedColumnKeys={results.columns.map(
+                    col => col.column_name,
+                  )}
+                  height={height}
+                  filterText={searchText}
+                  expandedColumns={expandedColumns}
+                  allowHTML={allowHTML}
+                />
+              )}
+            </AutoSizer>
+          </div>
         </ResultContainer>
       );
     }

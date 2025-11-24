@@ -85,7 +85,7 @@ const ChartHeaderStyles = styled.div`
     & > .header-title {
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 100%;
+      max-width: calc(100% - ${theme.sizeUnit * 4}px);
       flex-grow: 1;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -237,20 +237,23 @@ const SliceHeader = forwardRef<HTMLDivElement, SliceHeaderProps>(
       <ChartHeaderStyles data-test="slice-header" ref={ref}>
         <div className="header-title" ref={headerRef}>
           <Tooltip title={headerTooltip}>
-            <EditableTitle
-              title={
-                sliceName ||
-                (editMode
-                  ? '---' // this makes an empty title clickable
-                  : '')
-              }
-              canEdit={editMode}
-              onSaveTitle={updateSliceName}
-              showTooltip={false}
-              renderLink={
-                canExplore && exploreUrl ? renderExploreLink : undefined
-              }
-            />
+            {/* this div ensures the hover event triggers correctly and prevents flickering */}
+            <div>
+              <EditableTitle
+                title={
+                  sliceName ||
+                  (editMode
+                    ? '---' // this makes an empty title clickable
+                    : '')
+                }
+                canEdit={editMode}
+                onSaveTitle={updateSliceName}
+                showTooltip={false}
+                renderLink={
+                  canExplore && exploreUrl ? renderExploreLink : undefined
+                }
+              />
+            </div>
           </Tooltip>
           {!!Object.values(annotationQuery).length && (
             <Tooltip

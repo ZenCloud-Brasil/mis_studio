@@ -169,9 +169,8 @@ class SaveModal extends Component<SaveModalProps, SaveModalState> {
   handleRedirect = (windowLocationSearch: string, chart: any) => {
     const searchParams = new URLSearchParams(windowLocationSearch);
     searchParams.set('save_action', this.state.action);
-    if (this.state.action !== 'overwrite') {
-      searchParams.delete('form_data_key');
-    }
+
+    searchParams.delete('form_data_key');
 
     searchParams.set('slice_id', chart.id.toString());
     return searchParams;
@@ -442,7 +441,12 @@ class SaveModal extends Component<SaveModalProps, SaveModalState> {
 
   renderFooter = () => (
     <div data-test="save-modal-footer">
-      <Button id="btn_cancel" buttonSize="small" onClick={this.onHide}>
+      <Button
+        id="btn_cancel"
+        buttonSize="small"
+        onClick={this.onHide}
+        buttonStyle="secondary"
+      >
         {t('Cancel')}
       </Button>
       <Button

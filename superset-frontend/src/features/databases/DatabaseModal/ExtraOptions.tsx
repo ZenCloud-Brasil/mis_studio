@@ -33,6 +33,7 @@ import {
   CollapseLabelInModal,
   type CheckboxChangeEvent,
 } from '@superset-ui/core/components';
+import { useJsonValidation } from '@superset-ui/core/components/AsyncAceEditor';
 import {
   StyledInputContainer,
   StyledJsonEditor,
@@ -78,6 +79,31 @@ const ExtraOptions = ({
     }
     return value;
   });
+
+  // JSON validation hooks for the three editors
+  const secureExtraAnnotations = useJsonValidation(db?.masked_encrypted_extra, {
+    errorPrefix: 'Invalid secure extra JSON',
+  });
+
+  const metadataParamsValue = !Object.keys(extraJson?.metadata_params || {})
+    .length
+    ? ''
+    : typeof extraJson?.metadata_params === 'string'
+      ? extraJson?.metadata_params
+      : JSON.stringify(extraJson?.metadata_params);
+  const metadataParamsAnnotations = useJsonValidation(metadataParamsValue, {
+    errorPrefix: 'Invalid metadata parameters JSON',
+  });
+
+  const engineParamsValue = !Object.keys(extraJson?.engine_params || {}).length
+    ? ''
+    : typeof extraJson?.engine_params === 'string'
+      ? extraJson?.engine_params
+      : JSON.stringify(extraJson?.engine_params);
+  const engineParamsAnnotations = useJsonValidation(engineParamsValue, {
+    errorPrefix: 'Invalid engine parameters JSON',
+  });
+
   const theme = useTheme();
   const ExtraExtensionComponent = extraExtension?.component;
   const ExtraExtensionLogo = extraExtension?.logo;
@@ -90,11 +116,21 @@ const ExtraOptions = ({
   );
   const [activeKey, setActiveKey] = useState<string[] | undefined>();
 
+  const [schemasText, setSchemasText] = useState<string>('');
+  useEffect(() => {
+    if (!db) return;
+    const initialSchemas = (
+      (extraJson?.schemas_allowed_for_file_upload as string[] | undefined) || []
+    ).join(',');
+    setSchemasText(initialSchemas);
+  }, [db?.extra]);
+
   useEffect(() => {
     if (!expandableModalIsOpen && activeKey !== undefined) {
       setActiveKey(undefined);
     }
-  }, [expandableModalIsOpen, activeKey]);
+    // See issue #34630 for why we omit `activeKey` from the dependency array
+  }, [expandableModalIsOpen]);
 
   return (
     <Collapse
@@ -445,6 +481,7 @@ const ExtraOptions = ({
                     }
                     width="100%"
                     height="160px"
+                    annotations={secureExtraAnnotations}
                   />
                 </div>
                 <div className="helper">
@@ -487,7 +524,7 @@ const ExtraOptions = ({
                     onChange={onInputChange}
                   >
                     {t(
-                      'Impersonate logged in user (Presto, Trino, Drill, Hive, and GSheets)',
+                      'Impersonate logged in user (Presto, Trino, Drill, Hive, and Google Sheets)',
                     )}
                   </Checkbox>
                   <InfoTooltip
@@ -527,11 +564,18 @@ const ExtraOptions = ({
                     <Input
                       type="text"
                       name="schemas_allowed_for_file_upload"
-                      value={(
-                        extraJson?.schemas_allowed_for_file_upload || []
-                      ).join(',')}
+                      value={schemasText}
                       placeholder="schema1,schema2"
-                      onChange={onExtraInputChange}
+                      onChange={e => setSchemasText(e.target.value)}
+                      onBlur={() =>
+                        onExtraInputChange({
+                          target: {
+                            type: 'text',
+                            name: 'schemas_allowed_for_file_upload',
+                            value: schemasText,
+                          },
+                        } as ChangeEvent<HTMLInputElement>)
+                      }
                     />
                   </div>
                   <div className="helper">
@@ -603,6 +647,7 @@ const ExtraOptions = ({
                           ? extraJson?.metadata_params
                           : JSON.stringify(extraJson?.metadata_params)
                     }
+                    annotations={metadataParamsAnnotations}
                   />
                 </div>
                 <div className="helper">
@@ -629,6 +674,7 @@ const ExtraOptions = ({
                         ? ''
                         : extraJson?.engine_params
                     }
+                    annotations={engineParamsAnnotations}
                   />
                 </div>
                 <div className="helper">

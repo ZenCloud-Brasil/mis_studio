@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { type ReactChild } from 'react';
 import {
   render,
   screen,
@@ -27,8 +28,9 @@ import configureStore from 'redux-mock-store';
 import { Store } from 'redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
-import { setupAGGridModules } from 'src/setup/setupAGGridModules';
+import { setupAGGridModules } from '@superset-ui/core/components/ThemedAgGridReact';
 import ResultSet from 'src/SqlLab/components/ResultSet';
+import * as getBootstrapData from 'src/utils/getBootstrapData';
 import {
   cachedQuery,
   failedQueryWithErrors,
@@ -44,6 +46,14 @@ import {
 jest.mock('src/components/ErrorMessage', () => ({
   ErrorMessageWithStackTrace: () => <div data-test="error-message">Error</div>,
 }));
+
+jest.mock(
+  'react-virtualized-auto-sizer',
+  () =>
+    ({ children }: { children: (params: { height: number }) => ReactChild }) =>
+      children({ height: 500 }),
+);
+const applicationRootMock = jest.spyOn(getBootstrapData, 'applicationRoot');
 
 const mockedProps = {
   cache: true,
@@ -145,6 +155,10 @@ const setup = (props?: any, store?: Store) =>
 describe('ResultSet', () => {
   beforeAll(() => {
     setupAGGridModules();
+  });
+
+  beforeEach(() => {
+    applicationRootMock.mockReturnValue('');
   });
 
   // Add cleanup after each test
@@ -475,27 +489,38 @@ describe('ResultSet', () => {
     ).not.toBeInTheDocument();
   });
 
-  test('should allow download as CSV when user has permission to export data', async () => {
-    const { queryByTestId } = setup(
-      mockedProps,
-      mockStore({
-        ...initialState,
-        user: {
-          ...user,
-          roles: {
-            sql_lab: [['can_export_csv', 'SQLLab']],
+  test.each(['', '/myapp'])(
+    'should allow download as CSV when user has permission to export data with app_root=%s',
+    async app_root => {
+      applicationRootMock.mockReturnValue(app_root);
+      const { queryByTestId } = setup(
+        mockedProps,
+        mockStore({
+          ...initialState,
+          user: {
+            ...user,
+            roles: {
+              sql_lab: [['can_export_csv', 'SQLLab']],
+            },
           },
-        },
-        sqlLab: {
-          ...initialState.sqlLab,
-          queries: {
-            [queries[0].id]: queries[0],
+          sqlLab: {
+            ...initialState.sqlLab,
+            queries: {
+              [queries[0].id]: queries[0],
+            },
           },
-        },
-      }),
-    );
-    expect(queryByTestId('export-csv-button')).toBeInTheDocument();
-  });
+        }),
+      );
+      expect(queryByTestId('export-csv-button')).toBeInTheDocument();
+      const export_csv_button = screen.getByTestId('export-csv-button');
+      expect(export_csv_button).toHaveAttribute(
+        'href',
+        expect.stringMatching(
+          new RegExp(`^${app_root}/api/v1/sqllab/export/[a-zA-Z0-9]+/$`),
+        ),
+      );
+    },
+  );
 
   test('should display a popup message when the CSV content is limited to the dropdown limit', async () => {
     const queryLimit = 2;

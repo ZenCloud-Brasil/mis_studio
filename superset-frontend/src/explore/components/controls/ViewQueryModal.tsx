@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { FC, useEffect, useState } from 'react';
+import { FC, Fragment, useEffect, useState } from 'react';
 
 import {
   styled,
@@ -25,7 +25,8 @@ import {
   getClientErrorObject,
   QueryFormData,
 } from '@superset-ui/core';
-import { Loading } from '@superset-ui/core/components';
+import { Loading, Alert } from '@superset-ui/core/components';
+import { SupportedLanguage } from '@superset-ui/core/components/CodeSyntaxHighlighter';
 import { getChartDataRequest } from 'src/components/Chart/chartAction';
 import ViewQuery from 'src/explore/components/controls/ViewQuery';
 
@@ -34,14 +35,16 @@ interface Props {
 }
 
 type Result = {
-  query: string;
-  language: string;
+  query?: string;
+  language: SupportedLanguage;
+  error?: string;
 };
 
 const ViewQueryModalContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: ${({ theme }) => theme.sizeUnit * 4}px;
 `;
 
 const ViewQueryModal: FC<Props> = ({ latestQueryFormData }) => {
@@ -86,15 +89,21 @@ const ViewQueryModal: FC<Props> = ({ latestQueryFormData }) => {
 
   return (
     <ViewQueryModalContainer>
-      {result.map(item =>
-        item.query ? (
-          <ViewQuery
-            datasource={latestQueryFormData.datasource}
-            sql={item.query}
-            language="sql"
-          />
-        ) : null,
-      )}
+      {result.map((item, index) => (
+        // Static API response data - index is appropriate for keys
+        <Fragment key={index}>
+          {item.error && (
+            <Alert type="error" message={item.error} closable={false} />
+          )}
+          {item.query && (
+            <ViewQuery
+              datasource={latestQueryFormData.datasource}
+              sql={item.query}
+              language={item.language}
+            />
+          )}
+        </Fragment>
+      ))}
     </ViewQueryModalContainer>
   );
 };

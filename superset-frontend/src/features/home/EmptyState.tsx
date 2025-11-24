@@ -28,7 +28,7 @@ import { WelcomeTable } from './types';
 const EmptyContainer = styled.div`
   min-height: 200px;
   display: flex;
-  color: ${({ theme }) => theme.colors.grayscale.light2};
+  color: ${({ theme }) => theme.colorTextDescription};
   flex-direction: column;
   justify-content: space-around;
 `;
@@ -38,6 +38,19 @@ const ICONS = {
   [WelcomeTable.Dashboards]: 'empty-dashboard.svg',
   [WelcomeTable.Recents]: 'union.svg',
   [WelcomeTable.SavedQueries]: 'empty.svg',
+} as const;
+
+const LABELS = {
+  create: {
+    [WelcomeTable.Charts]: t('Chart'),
+    [WelcomeTable.Dashboards]: t('Dashboard'),
+    [WelcomeTable.SavedQueries]: t('SQL query'),
+  },
+  viewAll: {
+    [WelcomeTable.Charts]: t('charts'),
+    [WelcomeTable.Dashboards]: t('dashboards'),
+    [WelcomeTable.SavedQueries]: t('SQL Lab queries'),
+  },
 } as const;
 
 const REDIRECTS = {
@@ -66,14 +79,9 @@ export default function EmptyState({ tableName, tab }: EmptyStateProps) {
     }
 
     const isFavorite = tab === TableTab.Favorite;
-    const buttonText =
-      tableName === WelcomeTable.SavedQueries
-        ? isFavorite
-          ? t('SQL Lab queries')
-          : t('SQL query')
-        : isFavorite
-          ? t(tableName.toLowerCase())
-          : tableName.slice(0, -1);
+    const buttonText = isFavorite
+      ? LABELS.viewAll[tableName]
+      : LABELS.create[tableName];
 
     const url = isFavorite
       ? REDIRECTS.viewAll[tableName]

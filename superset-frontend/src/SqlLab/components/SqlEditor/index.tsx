@@ -50,7 +50,7 @@ import type {
   CursorPosition,
 } from 'src/SqlLab/types';
 import type { DatabaseObject } from 'src/features/databases/types';
-import { debounce, throttle, isEmpty } from 'lodash';
+import { debounce, isEmpty } from 'lodash';
 import Mousetrap from 'mousetrap';
 import {
   Alert,
@@ -98,7 +98,6 @@ import {
   INITIAL_NORTH_PERCENT,
   INITIAL_SOUTH_PERCENT,
   SET_QUERY_EDITOR_SQL_DEBOUNCE_MS,
-  WINDOW_RESIZE_THROTTLE_MS,
 } from 'src/SqlLab/constants';
 import {
   getItem,
@@ -174,6 +173,9 @@ const StyledSidebar = styled.div<{ width: number; hide: boolean | undefined }>`
   padding: ${({ theme, hide }) => (hide ? 0 : theme.sizeUnit * 2.5)}px;
   border-right: 1px solid
     ${({ theme, hide }) => (hide ? 'transparent' : theme.colorBorder)};
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const StyledSqlEditor = styled.div`
@@ -189,6 +191,7 @@ const StyledSqlEditor = styled.div`
     .queryPane {
       flex: 1 1 auto;
       padding: ${theme.sizeUnit * 2}px;
+      padding-left: 0px;
       overflow-y: auto;
       overflow-x: scroll;
     }
@@ -300,7 +303,6 @@ const SqlEditor: FC<Props> = ({
 
   const logAction = useLogAction({ queryEditorId: queryEditor.id });
   const isActive = currentQueryEditorId === queryEditor.id;
-  const [height, setHeight] = useState(0);
   const [autorun, setAutorun] = useState(queryEditor.autorun);
   const [ctas, setCtas] = useState('');
   const [northPercent, setNorthPercent] = useState(
@@ -327,8 +329,6 @@ const SqlEditor: FC<Props> = ({
   const northPaneRef = useRef<HTMLDivElement>(null);
 
   const SqlFormExtension = extensionsRegistry.get('sqleditor.extension.form');
-
-  const isTempId = (value: unknown): boolean => Number.isNaN(Number(value));
 
   const startQuery = useCallback(
     (ctasArg = false, ctas_method = CtasEnum.Table) => {
@@ -586,21 +586,12 @@ const SqlEditor: FC<Props> = ({
   });
 
   useEffect(() => {
-    // We need to measure the height of the sql editor post render to figure the height of
-    // the south pane so it gets rendered properly
-    setHeight(getSqlEditorHeight());
-    const handleWindowResizeWithThrottle = throttle(
-      () => setHeight(getSqlEditorHeight()),
-      WINDOW_RESIZE_THROTTLE_MS,
-    );
     if (isActive) {
       loadQueryEditor();
-      window.addEventListener('resize', handleWindowResizeWithThrottle);
       window.addEventListener('beforeunload', onBeforeUnload);
     }
 
     return () => {
-      window.removeEventListener('resize', handleWindowResizeWithThrottle);
       window.removeEventListener('beforeunload', onBeforeUnload);
     };
     // TODO: Remove useEffectEvent deps once https://github.com/facebook/react/pull/25881 is released
@@ -982,6 +973,7 @@ const SqlEditor: FC<Props> = ({
   );
 
   const queryPane = () => {
+    const height = getSqlEditorHeight();
     const { aceEditorHeight, southPaneHeight } =
       getAceEditorAndSouthPaneHeights(height, northPercent, southPercent);
     return (
@@ -1009,7 +1001,7 @@ const SqlEditor: FC<Props> = ({
           {queryEditor.isDataset && renderDatasetWarning()}
           {isActive && (
             <AceEditorWrapper
-              autocomplete={autocompleteEnabled && !isTempId(queryEditor.id)}
+              autocomplete={autocompleteEnabled}
               onBlur={onSqlChanged}
               onChange={onSqlChanged}
               queryEditorId={queryEditor.id}
@@ -1089,6 +1081,7 @@ const SqlEditor: FC<Props> = ({
       )}
       <Modal
         show={showCreateAsModal}
+        name={t(createViewModalTitle)}
         title={t(createViewModalTitle)}
         onHide={() => setShowCreateAsModal(false)}
         footer={

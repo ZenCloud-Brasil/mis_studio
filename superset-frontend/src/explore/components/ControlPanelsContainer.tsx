@@ -53,7 +53,6 @@ import {
   sections,
 } from '@superset-ui/chart-controls';
 import { useSelector } from 'react-redux';
-import { rgba } from 'emotion-rgba';
 import { kebabCase, isEqual } from 'lodash';
 
 import {
@@ -118,16 +117,11 @@ const iconStyles = css`
 
 const actionButtonsContainerStyles = (theme: SupersetTheme) => css`
   display: flex;
-  position: sticky;
-  bottom: 0;
   flex-direction: column;
   align-items: center;
   padding: ${theme.sizeUnit * 4}px;
-  z-index: 999;
-  background: linear-gradient(
-    ${rgba(theme.colorBgBase, 0)},
-    ${theme.colorBgBase} 35%
-  );
+  background: ${theme.colorBgContainer};
+  flex-shrink: 0;
 
   & > button {
     min-width: 156px;
@@ -138,14 +132,18 @@ const Styles = styled.div`
   position: relative;
   height: 100%;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 
   // Resizable add overflow-y: auto as a style to this div
   // To override it, we need to use !important
   overflow: visible !important;
+
   #controlSections {
-    height: 100%;
-    overflow: visible;
+    flex: 1;
+    overflow: auto;
   }
+
   .tab-content {
     overflow: auto;
     flex: 1 1 100%;
@@ -576,7 +574,7 @@ export const ControlPanelsContainer = (props: ControlPanelsContainerProps) => {
             id={`${kebabCase('validation-errors')}-tooltip`}
             title={t('This section contains validation errors')}
           >
-            <Icons.CloseCircleOutlined iconColor={theme.colorErrorText} />
+            <Icons.ExclamationCircleOutlined iconColor={theme.colorError} />
           </Tooltip>
         )}
       </span>
@@ -701,8 +699,9 @@ export const ControlPanelsContainer = (props: ControlPanelsContainerProps) => {
               placement="right"
               title={props.errorMessage}
             >
-              <Icons.CloseCircleOutlined
-                iconColor={theme.colorErrorText}
+              <Icons.ExclamationCircleOutlined
+                data-test="query-error-tooltip-trigger"
+                iconColor={theme.colorError}
                 iconSize="s"
               />
             </Tooltip>

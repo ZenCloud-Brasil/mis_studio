@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ensureIsArray, GenericDataType, styled, t } from '@superset-ui/core';
 import {
   TableView,
@@ -43,7 +43,7 @@ export const SamplesPane = ({
   isRequest,
   datasource,
   queryForce,
-  actions,
+  setForceQuery,
   dataSize = 50,
   isVisible,
   canDownload,
@@ -75,8 +75,8 @@ export const SamplesPane = ({
           setRowCount(response.rowcount);
           setResponseError('');
           cache.add(datasource);
-          if (queryForce && actions) {
-            actions.setForceQuery(false);
+          if (queryForce) {
+            setForceQuery?.(false);
           }
         })
         .catch(error => {
@@ -104,6 +104,11 @@ export const SamplesPane = ({
   );
   const filteredData = useFilteredTableData(filterText, data);
 
+  const handleInputChange = useCallback(
+    (input: string) => setFilterText(input),
+    [],
+  );
+
   if (isLoading) {
     return <Loading />;
   }
@@ -117,7 +122,7 @@ export const SamplesPane = ({
           columnTypes={coltypes}
           rowcount={rowcount}
           datasourceId={datasourceId}
-          onInputChange={input => setFilterText(input)}
+          onInputChange={handleInputChange}
           isLoading={isLoading}
           canDownload={canDownload}
         />
@@ -139,7 +144,7 @@ export const SamplesPane = ({
         columnTypes={coltypes}
         rowcount={rowcount}
         datasourceId={datasourceId}
-        onInputChange={input => setFilterText(input)}
+        onInputChange={handleInputChange}
         isLoading={isLoading}
         canDownload={canDownload}
       />

@@ -24,18 +24,18 @@ from typing import Any, TYPE_CHECKING, TypedDict
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
+from flask import current_app as app
 from flask_babel import gettext as __
 from marshmallow import fields, Schema
 from sqlalchemy import types
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.engine.url import URL
 
-from superset.config import VERSION_STRING
 from superset.constants import TimeGrain
 from superset.databases.utils import make_url_safe
 from superset.db_engine_specs.base import BaseEngineSpec
 from superset.errors import ErrorLevel, SupersetError, SupersetErrorType
-from superset.utils.core import get_user_agent, QuerySource
+from superset.utils.core import GenericDataType, get_user_agent, QuerySource
 
 if TYPE_CHECKING:
     from superset.models.core import Database
@@ -197,6 +197,35 @@ class DuckDBEngineSpec(DuckDBParametersMixin, BaseEngineSpec):
 
     sqlalchemy_uri_placeholder = "duckdb:////path/to/duck.db"
 
+    # DuckDB-specific column type mappings to ensure float/double types are recognized
+    column_type_mappings = (
+        (
+            re.compile(r"^hugeint", re.IGNORECASE),
+            types.BigInteger(),
+            GenericDataType.NUMERIC,
+        ),
+        (
+            re.compile(r"^ubigint", re.IGNORECASE),
+            types.BigInteger(),
+            GenericDataType.NUMERIC,
+        ),
+        (
+            re.compile(r"^uinteger", re.IGNORECASE),
+            types.Integer(),
+            GenericDataType.NUMERIC,
+        ),
+        (
+            re.compile(r"^usmallint", re.IGNORECASE),
+            types.SmallInteger(),
+            GenericDataType.NUMERIC,
+        ),
+        (
+            re.compile(r"^utinyint", re.IGNORECASE),
+            types.SmallInteger(),
+            GenericDataType.NUMERIC,
+        ),
+    )
+
     _time_grain_expressions = {
         None: "{col}",
         TimeGrain.SECOND: "DATE_TRUNC('second', {col})",
@@ -252,7 +281,8 @@ class DuckDBEngineSpec(DuckDBParametersMixin, BaseEngineSpec):
         delim = " " if custom_user_agent else ""
         user_agent = get_user_agent(database, source)
         user_agent = user_agent.replace(" ", "-").lower()
-        user_agent = f"{user_agent}/{VERSION_STRING}{delim}{custom_user_agent}"
+        version_string = app.config["VERSION_STRING"]
+        user_agent = f"{user_agent}/{version_string}{delim}{custom_user_agent}"
         config.setdefault("custom_user_agent", user_agent)
 
         return extra
