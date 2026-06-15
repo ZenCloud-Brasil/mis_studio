@@ -217,6 +217,8 @@ EXPOSE ${SUPERSET_PORT}
 ######################################################################
 FROM python-common AS lean
 
+COPY --chown=superset:superset copy_into_assets/mis_images /app/superset/static/assets
+COPY --chown=superset:superset copy_into_assets/mis_images /app/superset/static/assets/mis_images
 # Install Python dependencies using docker/pip-install.sh
 COPY requirements/base.txt requirements/
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
@@ -261,3 +263,15 @@ USER root
 RUN uv pip install .[postgres]
 USER superset
 CMD ["/app/docker/entrypoints/docker-ci.sh"]
+
+############################
+# Stage 3 — Nginx servindo os estáticos
+############################
+FROM nginx:alpine AS nginx
+
+# remove config default
+RUN rm /etc/nginx/conf.d/default.conf
+
+COPY docker/nginx.conf /etc/nginx/conf.d/app.conf
+
+EXPOSE 80
