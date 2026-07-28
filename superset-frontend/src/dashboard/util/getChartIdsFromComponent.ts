@@ -16,27 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
-import { ensureIsArray } from '@superset-ui/core';
-import { views } from 'src/core';
-import { resolveView } from 'src/core/views';
+import { CHART_TYPE } from './componentTypes';
+import type { DashboardLayout } from '../types';
 
-export interface ViewListExtensionProps {
-  viewId: string;
+export default function getChartIdsFromComponent(
+  componentId: string,
+  layout: DashboardLayout,
+): number[] {
+  const chartIds: number[] = [];
+  const component = layout[componentId];
+
+  if (!component) return chartIds;
+
+  // If this component is a chart, add its ID
+  if (component.type === CHART_TYPE && component.meta?.chartId) {
+    chartIds.push(component.meta.chartId);
+  }
+
+  // Recursively check children
+  if (component.children) {
+    component.children.forEach((childId: string) => {
+      chartIds.push(...getChartIdsFromComponent(childId, layout));
+    });
+  }
+
+  return chartIds;
 }
-
-const ViewListExtension = ({ viewId }: ViewListExtensionProps) => {
-  const viewItems = ensureIsArray(views.getViews(viewId));
-
-  return (
-    <>
-      {viewItems
-        .filter(view => view && typeof view.id !== 'undefined')
-        .map(view => (
-          <React.Fragment key={view.id}>{resolveView(view.id)}</React.Fragment>
-        ))}
-    </>
-  );
-};
-
-export default ViewListExtension;

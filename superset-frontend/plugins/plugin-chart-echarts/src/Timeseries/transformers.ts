@@ -25,7 +25,6 @@ import {
   FilterState,
   FormulaAnnotationLayer,
   IntervalAnnotationLayer,
-  isThemeDark,
   LegendState,
   TimeseriesAnnotationLayer,
   TimeseriesDataRecord,

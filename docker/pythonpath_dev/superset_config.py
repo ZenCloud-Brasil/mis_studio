@@ -163,7 +163,7 @@ FEATURE_FLAGS = {
 ENABLE_CORS = True
 
 CORS_OPTIONS = {
-    "supports_credentials": True,
+    "supports_credentials": False,
     "allow_headers": "*",
     "expose_headers": "*",
     "resources": "*",
@@ -172,6 +172,7 @@ CORS_OPTIONS = {
 
 ENABLE_PROXY_FIX = True
 SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = True
 WTF_CSRF_ENABLED = False  # To enable csrf token
 # PUBLIC_ROLE_LIKE_GAMMA = True
 # PUBLIC_ROLE_LIKE = "Gamma"
@@ -182,6 +183,13 @@ GUEST_TOKEN_JWT_SECRET = "test-guest-secret-change-me"
 GUEST_TOKEN_JWT_ALGO = "HS256"
 GUEST_TOKEN_HEADER_NAME = "X-GuestToken"
 GUEST_TOKEN_JWT_EXP_SECONDS = 300  # 5 minutes
+
+SUPERSET_WEBSERVER_EXPOSE_HEADERS = [
+    "X-GuestToken",
+    "Authorization",
+    "Content-Type"
+]
+
 
 try:
     import superset_config_docker

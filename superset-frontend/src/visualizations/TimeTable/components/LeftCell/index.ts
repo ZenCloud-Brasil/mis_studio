@@ -16,4 +16,5 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-export { default } from './Row';
+
+export { default } from './LeftCell';

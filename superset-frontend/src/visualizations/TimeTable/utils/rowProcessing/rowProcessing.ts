@@ -16,14 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import type { Layout } from 'src/dashboard/types';
-import { DropResult } from 'src/dashboard/components/dnd/dragDroppableConfig';
-import getComponentWidthFromDrop from './getComponentWidthFromDrop';
+import type { TimeTableData, Entry } from '../../types';
 
-export default function doesChildOverflowParent(
-  dropResult: DropResult,
-  layout: Layout,
-): boolean {
-  const childWidth = getComponentWidthFromDrop({ dropResult, layout });
-  return typeof childWidth === 'number' && childWidth < 0;
+/**
+ * Converts raw time table data into sorted entries
+ */
+export function processTimeTableData(data: TimeTableData): {
+  entries: Entry[];
+  reversedEntries: Entry[];
+} {
+  const entries: Entry[] = Object.keys(data)
+    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+    .map(time => ({ ...data[time], time }));
+
+  const reversedEntries = [...entries].reverse();
+
+  return { entries, reversedEntries };
 }

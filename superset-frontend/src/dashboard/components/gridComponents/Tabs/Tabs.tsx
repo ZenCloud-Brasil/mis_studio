@@ -130,9 +130,6 @@ const Tabs = (props: TabsProps): ReactElement => {
   const nativeFiltersBarOpen = useSelector(
     (state: RootState) => state.dashboardState.nativeFiltersBarOpen ?? false,
   );
-  const nativeFiltersBarOpen = useSelector(
-    state => state.dashboardState.nativeFiltersBarOpen ?? false,
-  );
 
   const { tabIndex: initTabIndex, activeKey: initActiveKey } = useMemo(() => {
     let tabIndex = Math.max(
@@ -564,36 +561,6 @@ const Tabs = (props: TabsProps): ReactElement => {
       handleTabsReorder,
       isEditingTabTitle,
       handleTabTitleEditingChange,
-    ],
-  );
-
-  const renderChild = useCallback(
-    ({ dragSourceRef: tabsDragSourceRef }) => (
-      <TabsRenderer
-        tabItems={tabItems}
-        editMode={editMode}
-        renderHoverMenu={renderHoverMenu}
-        tabsDragSourceRef={tabsDragSourceRef}
-        handleDeleteComponent={handleDeleteComponent}
-        tabsComponent={tabsComponent}
-        activeKey={activeKey}
-        tabIds={tabIds}
-        handleClickTab={handleClickTab}
-        handleEdit={handleEdit}
-        tabBarPaddingLeft={tabBarPaddingLeft}
-      />
-    ),
-    [
-      tabItems,
-      editMode,
-      renderHoverMenu,
-      handleDeleteComponent,
-      tabsComponent,
-      activeKey,
-      tabIds,
-      handleClickTab,
-      handleEdit,
-      tabBarPaddingLeft,
     ],
   );
 
