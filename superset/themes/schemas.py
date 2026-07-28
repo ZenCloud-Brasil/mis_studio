@@ -14,7 +14,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import logging
 from typing import Any
 
 from marshmallow import fields, Schema, validates, ValidationError
@@ -25,8 +24,6 @@ from superset.themes.utils import (
     validate_font_urls,
 )
 from superset.utils import json
-
-logger = logging.getLogger(__name__)
 
 
 def _sanitize_and_validate_theme_config(theme_config: dict[str, Any]) -> dict[str, Any]:
@@ -83,8 +80,14 @@ class ImportV1ThemeSchema(Schema):
                 self.context["sanitized_json_data"] = json.dumps(sanitized_config)
 
 
-class ThemePostSchema(ThemeBaseSchema):
-    pass
+class ThemePostSchema(Schema):
+    theme_name = fields.String(required=True, allow_none=False)
+    json_data = fields.String(required=True, allow_none=False)
+
+    @validates("theme_name")
+    def validate_theme_name(self, value: str) -> None:
+        if not value or not value.strip():
+            raise ValidationError("Theme name cannot be empty.")
 
     @validates("json_data")
     def validate_and_sanitize_json_data(self, value: str) -> None:
@@ -104,8 +107,14 @@ class ThemePostSchema(ThemeBaseSchema):
             self.context["sanitized_json_data"] = json.dumps(sanitized_config)
 
 
-class ThemePutSchema(ThemeBaseSchema):
-    pass
+class ThemePutSchema(Schema):
+    theme_name = fields.String(required=True, allow_none=False)
+    json_data = fields.String(required=True, allow_none=False)
+
+    @validates("theme_name")
+    def validate_theme_name(self, value: str) -> None:
+        if not value or not value.strip():
+            raise ValidationError("Theme name cannot be empty.")
 
     @validates("json_data")
     def validate_and_sanitize_json_data(self, value: str) -> None:

@@ -1011,10 +1011,6 @@ msgstr "Настройки отображения"
 msgid "Add divider"
 msgstr "Разделитель"
 
-#, fuzzy
-msgid "Add dynamic group by"
-msgstr "Добавить правило"
-
 msgid "Add extra connection information."
 msgstr "Дополнительная информация по подключению"
 
@@ -1605,10 +1601,6 @@ msgstr "Произошла ошибка при загрузке информац
 
 msgid "An error occurred while loading the SQL"
 msgstr "Произошла ошибка при загрузке SQL"
-
-#, fuzzy
-msgid "An error occurred while overwriting the dataset"
-msgstr "Произошла ошибка при создании источника данных"
 
 #, fuzzy
 msgid "An error occurred while overwriting the dataset"
@@ -2549,10 +2541,6 @@ msgstr "Нельзя использовать несколько учетных 
 msgid "Cannot load filter"
 msgstr "Невозможно загрузить фильтр"
 
-#, fuzzy
-msgid "Cannot load filter: "
-msgstr "Невозможно загрузить фильтр"
-
 msgid "Cannot modify system themes."
 msgstr "Невозможно изменять системные темы."
 
@@ -2717,14 +2705,6 @@ msgstr "Диаграмма"
 #, python-format
 msgid "Chart %(id)s not found"
 msgstr "Диаграмма %(id)s не найдена"
-
-#, fuzzy
-msgid "Chart Customization"
-msgstr "Ориентация диаграммы"
-
-#, fuzzy, python-format
-msgid "Chart Customization (%d)"
-msgstr "Ориентация диаграммы"
 
 #, python-format
 msgid "Chart Data: %s"
@@ -3396,15 +3376,6 @@ msgstr ""
 "Сравнивает меры за разные периоды времени. Отображает данные временных "
 "рядов за несколько периодов (например, недель или месяцев), чтобы "
 "показать тенденции и закономерности между периодами."
-
-msgid ""
-"Compares metrics between different time periods. Displays time series data across "
-"multiple periods (like weeks or months) to show period-over-period trends and "
-"patterns."
-msgstr ""
-"Сравнивает меры за разные периоды времени. Отображает данные временных рядов за "
-"несколько периодов (например, недель или месяцев), чтобы показать тенденции и "
-"закономерности между периодами."
 
 msgid "Comparison"
 msgstr "Сравнение"
@@ -4243,11 +4214,6 @@ msgstr "Не удалось удалить меру датасета"
 msgid "Dataset metric not found."
 msgstr "Мера датасета не найдена"
 
-#, fuzzy
-msgid ""
-"Dataset must be selected when \"Dynamic group by value is required\" is enabled"
-msgstr "Для использования фильтра нужно будет выбрать значение"
-
 msgid "Dataset name"
 msgstr "Имя датасета"
 
@@ -4445,21 +4411,6 @@ msgstr ""
 "Минимальная ширина столбца (в пикселях). Реальная ширина по-прежнему "
 "может быть больше, чем указанная, если остальным столбцам не будет "
 "хватать места."
-
-#, fuzzy
-msgid ""
-"Default value is required when \"Dynamic group by value is required\" is enabled"
-msgstr "Для использования фильтра нужно будет выбрать значение"
-
-#, fuzzy
-msgid ""
-"Default value must be set when \"Dynamic group by has a default value\" is checked"
-msgstr "Включив эту настройку, нужно выбрать значение фильтра по умолчанию"
-
-#, fuzzy
-msgid ""
-"Default value must be set when \"Dynamic group by value is required\" is checked"
-msgstr "Для использования фильтра нужно будет выбрать значение"
 
 msgid "Default value must be set when \"Filter has default value\" is checked"
 msgstr "Включив эту настройку, нужно выбрать значение фильтра по умолчанию"
@@ -5459,9 +5410,6 @@ msgid "Enable 'Allow file uploads to database' in any database's settings"
 msgstr ""
 "Включите \"Разрешить загрузку файлов в базу данных\" в настройках любой "
 "базы данных"
-
-msgid "Enable Matrixify"
-msgstr "Включить матричное расположение"
 
 msgid "Enable Matrixify"
 msgstr "Включить матричное расположение"
@@ -9945,10 +9893,6 @@ msgstr "Удалить системную светлую тему"
 msgid "Remove cross-filter"
 msgstr "Удалить кросс-фильтр"
 
-#, fuzzy
-msgid "Remove group by"
-msgstr "Группировать по"
-
 msgid "Remove item"
 msgstr "Удалить элемент"
 
@@ -10293,9 +10237,6 @@ msgid ""
 msgstr ""
 "Номер строки, содержащей заголовки для использования в качестве имен "
 "столбцов (начиная с 0). Оставьте пустым, если заголовки отсутствуют."
-
-msgid "Row height"
-msgstr "Высота строки"
 
 msgid "Row height"
 msgstr "Высота строки"
@@ -10811,9 +10752,6 @@ msgid ""
 msgstr ""
 "Выберите меру для отображения. Чтобы создать меру, также можно "
 "использовать агрегатную функцию или написать свой SQL."
-
-msgid "Select a predefined CSS template to apply to your dashboard"
-msgstr "Выберите готовый CSS-шаблон для применения к вашему дашборду"
 
 msgid "Select a predefined CSS template to apply to your dashboard"
 msgstr "Выберите готовый CSS-шаблон для применения к вашему дашборду"
@@ -11464,9 +11402,6 @@ msgid ""
 msgstr ""
 "Общие итоговые значения выбранных показателей. Обратите внимание, что "
 "ограничение количества строк не применяется к результату."
-
-msgid "Show value"
-msgstr "Показать значение"
 
 msgid "Show value"
 msgstr "Показать значение"
@@ -12533,9 +12468,6 @@ msgstr ""
 msgid "The display name of your dashboard"
 msgstr "Отображаемое название вашего дашборда"
 
-msgid "The display name of your dashboard"
-msgstr "Отображаемое название вашего дашборда"
-
 msgid "The distance between cells, in pixels"
 msgstr "Расстояние между ячейками (в пикселях)"
 
@@ -12558,10 +12490,6 @@ msgid "The exponent to compute all sizes from. \"EXP\" only"
 msgstr ""
 "Экспонента, используемая для вычисления всех размеров. Доступно только "
 "для \"EXP\""
-
-#, python-format
-msgid "The extension %(id)s could not be loaded."
-msgstr "Не удалось загрузить расширение %(id)s."
 
 #, python-format
 msgid "The extension %(id)s could not be loaded."
@@ -13638,9 +13566,6 @@ msgstr ""
 msgid "This filter already exist on the report"
 msgstr "Этот фильтр уже существует в отчете"
 
-msgid "This filter already exist on the report"
-msgstr "Этот фильтр уже существует в отчете"
-
 msgid "This filter might be incompatible with current dataset"
 msgstr "Этот фильтр может быть несовместим с этим датасетом"
 
@@ -13656,22 +13581,10 @@ msgstr ""
 msgid "This functionality is disabled in your environment for security reasons."
 msgstr "Эта функция отключена по соображениям безопасности"
 
-msgid "This is custom error message for a"
-msgstr ""
-
-msgid "This is custom error message for b"
-msgstr ""
-
 msgid ""
 "This is a default columns folder. Its name cannot be changed or removed. "
 "It can stay empty but will only accept column items."
 msgstr ""
-
-msgid "This is the system dark theme"
-msgstr "Системная темная тема"
-
-msgid "This is the system default theme"
-msgstr "Системная светлая тема"
 
 msgid ""
 "This is a default metrics folder. Its name cannot be changed or removed. "
@@ -13782,9 +13695,6 @@ msgid ""
 msgstr ""
 "Для этой таблицы уже есть связанный датасет. Можно связать только один "
 "датасет с таблицей.\n"
-
-msgid "This theme is set locally"
-msgstr "Тема установлена локально"
 
 msgid "This theme is set locally"
 msgstr "Тема установлена локально"
@@ -14701,12 +14611,6 @@ msgstr "Корректное SQL-выражение"
 #, fuzzy
 msgid "Validate query"
 msgstr "Показать SQL-запрос"
-
-msgid "Validate your expression"
-msgstr "Проверьте ваше выражение"
-
-msgid "Valid SQL expression"
-msgstr "Корректное SQL-выражение"
 
 msgid "Validate your expression"
 msgstr "Проверьте ваше выражение"
@@ -15790,9 +15694,6 @@ msgstr ""
 "мерами), которые соответствуют новому датасету, были сохранены."
 
 msgid "Your account is activated. You can log in with your credentials."
-msgstr ""
-
-msgid "Your changes will be lost if you leave without saving."
 msgstr ""
 
 msgid "Your changes will be lost if you leave without saving."

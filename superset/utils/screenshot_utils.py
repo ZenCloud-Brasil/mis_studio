@@ -182,7 +182,7 @@ def take_tiled_screenshot(
             logger.debug("Captured tile %s/%s with clip %s", i + 1, num_tiles, clip)
 
         # Combine all tiles
-        logger.debug("Captured tile %s/%s with clip %s", i + 1, num_tiles, clip)
+        logger.info("Combining screenshot tiles...")
         combined_screenshot = combine_screenshot_tiles(screenshot_tiles)
 
         return combined_screenshot
